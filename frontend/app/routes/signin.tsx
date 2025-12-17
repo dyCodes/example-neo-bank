@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { Route } from './+types/signin';
+import { isAuthenticated } from '~/lib/auth';
 import { Button } from '~/components/ui/button';
 import {
   Card,
@@ -12,7 +13,9 @@ import {
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import { DEFAULT_EMAIL, PASSWORD_PATTERN } from '~/lib/constants';
+import { DEFAULT_EMAIL } from '~/lib/constants';
+import { setAuth } from '~/lib/auth';
+import { mockUserAccount } from '~/lib/mock-data';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'Sign In' }, { name: 'description', content: 'Sign in to your account' }];
@@ -22,6 +25,12 @@ export default function SignIn() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -30,13 +39,17 @@ export default function SignIn() {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    // Demo login: check if email matches default and password is 8 digits
+    // Demo login: check if email matches default and password is at least 8 characters
     const isEmailValid = email === DEFAULT_EMAIL;
-    const isPasswordValid = PASSWORD_PATTERN.test(password);
+    const isPasswordValid = password.length >= 8;
 
     if (isEmailValid && isPasswordValid) {
+      setAuth({
+        email: email,
+        name: mockUserAccount.name,
+      });
       toast.success('Signed in successfully!');
-      navigate('/');
+      navigate('/dashboard');
     } else {
       toast.error('Invalid email or password.');
     }
