@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowDown, ArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { cn } from '~/lib/utils';
@@ -8,6 +8,10 @@ interface BalanceCardProps {
   accountNumber?: string;
   label?: string;
   className?: string;
+  portfolioValue?: {
+    totalGain: number;
+    totalGainPercent: number;
+  };
 }
 
 export function BalanceCard({
@@ -15,6 +19,7 @@ export function BalanceCard({
   accountNumber,
   label = 'Account Balance',
   className,
+  portfolioValue,
 }: BalanceCardProps) {
   const [isVisible, setIsVisible] = useState(true);
 
@@ -44,6 +49,26 @@ export function BalanceCard({
           <p className="text-3xl font-bold text-primary-foreground">
             {isVisible ? `₦${balance.toLocaleString()}` : '••••••'}
           </p>
+          {portfolioValue && isVisible && (
+            <div className="flex items-center gap-2 mt-3">
+              {portfolioValue.totalGain >= 0 ? (
+                <ArrowUp className="h-4 w-4 text-green-200" />
+              ) : (
+                <ArrowDown className="h-4 w-4 text-red-200" />
+              )}
+              <span
+                className={cn(
+                  'text-sm font-semibold',
+                  portfolioValue.totalGain >= 0 ? 'text-green-200' : 'text-red-200'
+                )}
+              >
+                {portfolioValue.totalGain >= 0 ? '+' : ''}₦
+                {Math.abs(portfolioValue.totalGain).toLocaleString()} (
+                {portfolioValue.totalGainPercent > 0 ? '+' : ''}
+                {portfolioValue.totalGainPercent.toFixed(2)}%)
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -23,3 +23,15 @@ export function clearAuth() {
 export function isAuthenticated(): boolean {
   return getAuth() !== null;
 }
+
+// Investment terms acceptance
+const INVEST_TERMS_KEY = 'neobank_invest_terms_accepted';
+
+export function hasAcceptedInvestTerms(): boolean {
+  const accepted = localStorage.getItem(INVEST_TERMS_KEY);
+  return accepted === 'true';
+}
+
+export function acceptInvestTerms() {
+  localStorage.setItem(INVEST_TERMS_KEY, 'true');
+}
