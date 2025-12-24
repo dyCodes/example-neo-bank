@@ -4,11 +4,13 @@ async function handleResponse<T>(response: Response): Promise<T> {
     const error = await response.json().catch(() => ({
       error: `HTTP ${response.status}: ${response.statusText}`,
     }));
-    throw new Error(
+    const errorMessage =
       typeof error.error === 'string'
         ? error.error
-        : error.error?.message || 'An error occurred'
-    );
+        : error.error?.message || 'An error occurred';
+    const errorWithStatus = new Error(errorMessage) as Error & { status: number };
+    errorWithStatus.status = response.status;
+    throw errorWithStatus;
   }
   return response.json();
 }

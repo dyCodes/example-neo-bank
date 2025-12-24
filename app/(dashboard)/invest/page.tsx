@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { InvestOnboarding } from '@/components/invest/onboarding';
 import { InvestmentService, type Position } from '@/services/investment.service';
 import { AccountService } from '@/services/account.service';
-import { getAuth, setExternalAccountId } from '@/lib/auth';
+import { getAuth, setExternalAccountId, clearExternalAccountId } from '@/lib/auth';
 import { toast } from 'sonner';
 
 export default function Invest() {
@@ -51,6 +51,16 @@ export default function Invest() {
       try {
         account = await AccountService.getAccount(userAccountId);
       } catch (err) {
+        const is404 = err instanceof Error && 'status' in err && (err as any).status === 404;
+        if (is404) {
+          // Clear externalAccountId since the account doesn't exist
+          clearExternalAccountId();
+          setHasAccountId(false);
+          setAccountId(null);
+          setLoading(false);
+          return;
+        }
+
         setError('Error fetching account. Please try again later.');
         setLoading(false);
         return;

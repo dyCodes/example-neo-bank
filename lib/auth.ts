@@ -55,3 +55,13 @@ export function setExternalAccountId(accountId: string) {
     });
   }
 }
+
+export function clearExternalAccountId() {
+  const user = getAuth();
+  if (user) {
+    setAuth({
+      ...user,
+      externalAccountId: undefined,
+    });
+  }
+}
