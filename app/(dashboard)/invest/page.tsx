@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ArrowDown, ArrowUp, TrendingUp, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -77,6 +78,8 @@ export default function Invest() {
       ]);
 
       setPositions(positionsData);
+      console.log('positionsData', positionsData);
+
       setOrders(ordersData);
       setTransactions(transactionsData);
 
@@ -207,51 +210,61 @@ export default function Invest() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold">{position.symbol}</h3>
-                              <Badge variant="outline" className="text-xs">
-                                {position.shares} shares
-                              </Badge>
+                              <Link
+                                href={`/invest/assets/${position.symbol}`}
+                                className="font-semibold hover:text-primary hover:underline cursor-pointer"
+                              >
+                                {position.symbol}
+                              </Link>
                             </div>
-                            <p className="text-sm text-muted-foreground">{position.name}</p>
                             <div className="flex items-center gap-4 mt-2">
                               <div>
                                 <p className="text-xs text-muted-foreground">Current Price</p>
                                 <p className="text-sm font-medium">
-                                  ${position.currentPrice.toFixed(2)}
+                                  $
+                                  {position.currentPrice != null
+                                    ? position.currentPrice.toFixed(2)
+                                    : 'N/A'}
                                 </p>
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground">Value</p>
                                 <p className="text-sm font-medium">
-                                  ${position.value.toFixed(2)}
+                                  ${position.value != null ? position.value.toFixed(2) : 'N/A'}
                                 </p>
                               </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="flex items-center gap-1 mb-1">
-                              {position.gain >= 0 ? (
-                                <ArrowUp className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <ArrowDown className="h-4 w-4 text-red-600" />
-                              )}
-                              <span
-                                className={`text-sm font-semibold ${
-                                  position.gain >= 0 ? 'text-green-600' : 'text-red-600'
+                          {position.gain != null && (
+                            <div className="text-right">
+                              <div className="flex items-center gap-1 mb-1">
+                                {position.gain >= 0 ? (
+                                  <ArrowUp className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <ArrowDown className="h-4 w-4 text-red-600" />
+                                )}
+                                <span
+                                  className={`text-sm font-semibold ${
+                                    position.gain >= 0 ? 'text-green-600' : 'text-red-600'
+                                  }`}
+                                >
+                                  {position.gain >= 0 ? '+' : ''}$
+                                  {position.gain != null ? position.gain.toFixed(2) : 'N/A'}
+                                </span>
+                              </div>
+                              <p
+                                className={`text-xs ${
+                                  position.gainPercent >= 0 ? 'text-green-600' : 'text-red-600'
                                 }`}
                               >
-                                {position.gain >= 0 ? '+' : ''}${position.gain.toFixed(2)}
-                              </span>
+                                {position.gainPercent >= 0 ? '+' : ''}
+                                {position.gainPercent != null
+                                  ? position.gainPercent.toFixed(2)
+                                  : 'N/A'}
+                                %
+                              </p>
                             </div>
-                            <p
-                              className={`text-xs ${
-                                position.gainPercent >= 0 ? 'text-green-600' : 'text-red-600'
-                              }`}
-                            >
-                              {position.gainPercent >= 0 ? '+' : ''}
-                              {position.gainPercent.toFixed(2)}%
-                            </p>
-                          </div>
+                          )}
                         </div>
                         {index < positions.length - 1 && <Separator className="mt-4" />}
                       </div>
@@ -298,7 +311,12 @@ export default function Invest() {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold">{order.symbol}</h3>
+                                <Link
+                                  href={`/invest/assets/${order.symbol}`}
+                                  className="font-semibold hover:text-primary hover:underline cursor-pointer"
+                                >
+                                  {order.symbol}
+                                </Link>
                                 <Badge
                                   variant={order.side === 'buy' ? 'default' : 'secondary'}
                                   className="text-xs"
@@ -320,7 +338,11 @@ export default function Invest() {
                                   <div>
                                     <p className="text-xs text-muted-foreground">Avg Price</p>
                                     <p className="text-sm font-medium">
-                                      ${parseFloat(order.average_price).toFixed(2)}
+                                      $
+                                      {order.average_price != null &&
+                                      !isNaN(parseFloat(order.average_price))
+                                        ? parseFloat(order.average_price).toFixed(2)
+                                        : 'N/A'}
                                     </p>
                                   </div>
                                 )}
@@ -330,7 +352,11 @@ export default function Invest() {
                                       Limit Price
                                     </p>
                                     <p className="text-sm font-medium">
-                                      ${parseFloat(order.limit_price).toFixed(2)}
+                                      $
+                                      {order.limit_price != null &&
+                                      !isNaN(parseFloat(order.limit_price))
+                                        ? parseFloat(order.limit_price).toFixed(2)
+                                        : 'N/A'}
                                     </p>
                                   </div>
                                 )}
@@ -404,7 +430,11 @@ export default function Invest() {
                                 <div>
                                   <p className="text-xs text-muted-foreground">Amount</p>
                                   <p className="text-sm font-medium">
-                                    ${parseFloat(transaction.amount || '0').toFixed(2)}
+                                    $
+                                    {transaction.amount != null &&
+                                    !isNaN(parseFloat(transaction.amount))
+                                      ? parseFloat(transaction.amount).toFixed(2)
+                                      : '0.00'}
                                   </p>
                                 </div>
                                 <div>
@@ -417,7 +447,11 @@ export default function Invest() {
                                   <div>
                                     <p className="text-xs text-muted-foreground">Fee</p>
                                     <p className="text-sm font-medium">
-                                      ${parseFloat(transaction.fee).toFixed(2)}
+                                      $
+                                      {transaction.fee != null &&
+                                      !isNaN(parseFloat(transaction.fee))
+                                        ? parseFloat(transaction.fee).toFixed(2)
+                                        : 'N/A'}
                                     </p>
                                   </div>
                                 )}
@@ -446,7 +480,10 @@ export default function Invest() {
                                   }`}
                                 >
                                   {isDeposit ? '+' : '-'}$
-                                  {parseFloat(transaction.amount || '0').toFixed(2)}
+                                  {transaction.amount != null &&
+                                  !isNaN(parseFloat(transaction.amount))
+                                    ? parseFloat(transaction.amount).toFixed(2)
+                                    : '0.00'}
                                 </span>
                               </div>
                             </div>

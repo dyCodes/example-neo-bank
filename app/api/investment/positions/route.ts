@@ -24,16 +24,20 @@ export async function GET(request: NextRequest) {
 
     // Transform positions to match frontend Stock interface
     const holdings = Array.isArray(positions)
-      ? positions.map((pos: any) => ({
-          symbol: pos.symbol,
-          name: pos.symbol, // You might want to fetch asset name separately
-          shares: parseFloat(pos.quantity),
-          currentPrice: parseFloat(pos.current_price),
-          purchasePrice: parseFloat(pos.average_cost_basis),
-          value: parseFloat(pos.market_value),
-          gain: parseFloat(pos.unrealized_pl),
-          gainPercent: parseFloat(pos.unrealized_pl_percent),
-        }))
+      ? positions.map((pos: any) => {
+          const shares = parseFloat(pos.quantity) || 0;
+          return {
+            symbol: pos.symbol,
+            name: pos.symbol, // You might want to fetch asset name separately
+            shares,
+            currentPrice: pos.current_price ? parseFloat(pos.current_price) : null,
+            purchasePrice: pos.average_cost_basis ? parseFloat(pos.average_cost_basis) : null,
+            // Value should be 0 when shares is 0, not null
+            value: shares === 0 ? 0 : pos.market_value ? parseFloat(pos.market_value) : null,
+            gain: pos.unrealized_pl ? parseFloat(pos.unrealized_pl) : null,
+            gainPercent: pos.unrealized_pl_percent ? parseFloat(pos.unrealized_pl_percent) : null,
+          };
+        })
       : [];
 
     return NextResponse.json(holdings);

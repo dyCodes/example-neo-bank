@@ -50,16 +50,17 @@ export function BalanceCard({
 
     setProcessing(true);
     try {
+      const amountStr = !isNaN(depositAmount) ? depositAmount.toFixed(2) : '0.00';
       await InvestmentService.fundAccount({
         account_id: accountId,
-        amount: depositAmount.toFixed(2),
+        amount: amountStr,
         funding_details: {
           funding_type: 'fiat',
           fiat_currency: 'USD',
           bank_account_id: 'default_bank_account', // TODO: Replace with actual bank account selection
           method: 'ach',
         },
-        description: `Deposit of $${depositAmount.toFixed(2)}`,
+        description: `Deposit of $${amountStr}`,
       });
       toast.success('Deposit successful!');
       setShowDepositModal(false);
@@ -92,16 +93,17 @@ export function BalanceCard({
 
     setProcessing(true);
     try {
+      const amountStr = !isNaN(withdrawAmount) ? withdrawAmount.toFixed(2) : '0.00';
       await InvestmentService.withdrawFunds({
         account_id: accountId,
-        amount: withdrawAmount.toFixed(2),
+        amount: amountStr,
         funding_details: {
           funding_type: 'fiat',
           fiat_currency: 'USD',
           bank_account_id: 'default_bank_account', // TODO: Replace with actual bank account selection
           method: 'ach',
         },
-        description: `Withdrawal of $${withdrawAmount.toFixed(2)}`,
+        description: `Withdrawal of $${amountStr}`,
       });
       toast.success('Withdrawal successful!');
       setShowWithdrawModal(false);
@@ -157,7 +159,7 @@ export function BalanceCard({
                   {portfolioValue.totalGain >= 0 ? '+' : ''}$
                   {Math.abs(portfolioValue.totalGain).toLocaleString()} (
                   {portfolioValue.totalGainPercent > 0 ? '+' : ''}
-                  {portfolioValue.totalGainPercent.toFixed(2)}%)
+                  {portfolioValue.totalGainPercent != null ? portfolioValue.totalGainPercent.toFixed(2) : '0.00'}%)
                 </span>
               </div>
             )}
