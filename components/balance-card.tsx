@@ -1,12 +1,10 @@
-import { Eye, EyeOff, ArrowDown, ArrowUp, Plus, Minus, X, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowDown, ArrowUp, Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
-import { InvestmentService } from '@/services/investment.service';
-import { toast } from 'sonner';
+import { Deposit } from './payment/deposit';
+import { Withdrawal } from './payment/withdrawal';
 
 interface BalanceCardProps {
   balance: number;
@@ -33,88 +31,15 @@ export function BalanceCard({
   const [isVisible, setIsVisible] = useState(true);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [amount, setAmount] = useState('');
-  const [processing, setProcessing] = useState(false);
 
-  const handleDeposit = async () => {
-    if (!accountId) {
-      toast.error('Account ID is required');
-      return;
-    }
-
-    const depositAmount = parseFloat(amount);
-    if (!amount || depositAmount <= 0) {
-      toast.error('Please enter a valid amount');
-      return;
-    }
-
-    setProcessing(true);
-    try {
-      const amountStr = !isNaN(depositAmount) ? depositAmount.toFixed(2) : '0.00';
-      await InvestmentService.fundAccount({
-        account_id: accountId,
-        amount: amountStr,
-        funding_details: {
-          funding_type: 'fiat',
-          fiat_currency: 'USD',
-          bank_account_id: 'default_bank_account', // TODO: Replace with actual bank account selection
-          method: 'ach',
-        },
-        description: `Deposit of $${amountStr}`,
-      });
-      toast.success('Deposit successful!');
-      setShowDepositModal(false);
-      setAmount('');
-      onSuccess?.();
-    } catch (error: any) {
-      const errorMessage = error.message || 'Failed to deposit funds';
-      toast.error(errorMessage);
-    } finally {
-      setProcessing(false);
-    }
+  const handleDepositSuccess = () => {
+    setShowDepositModal(false);
+    onSuccess?.();
   };
 
-  const handleWithdraw = async () => {
-    if (!accountId) {
-      toast.error('Account ID is required');
-      return;
-    }
-
-    const withdrawAmount = parseFloat(amount);
-    if (!amount || withdrawAmount <= 0) {
-      toast.error('Please enter a valid amount');
-      return;
-    }
-
-    if (withdrawAmount > balance) {
-      toast.error('Insufficient balance');
-      return;
-    }
-
-    setProcessing(true);
-    try {
-      const amountStr = !isNaN(withdrawAmount) ? withdrawAmount.toFixed(2) : '0.00';
-      await InvestmentService.withdrawFunds({
-        account_id: accountId,
-        amount: amountStr,
-        funding_details: {
-          funding_type: 'fiat',
-          fiat_currency: 'USD',
-          bank_account_id: 'default_bank_account', // TODO: Replace with actual bank account selection
-          method: 'ach',
-        },
-        description: `Withdrawal of $${amountStr}`,
-      });
-      toast.success('Withdrawal successful!');
-      setShowWithdrawModal(false);
-      setAmount('');
-      onSuccess?.();
-    } catch (error: any) {
-      const errorMessage = error.message || 'Failed to withdraw funds';
-      toast.error(errorMessage);
-    } finally {
-      setProcessing(false);
-    }
+  const handleWithdrawSuccess = () => {
+    setShowWithdrawModal(false);
+    onSuccess?.();
   };
 
   return (
@@ -159,7 +84,10 @@ export function BalanceCard({
                   {portfolioValue.totalGain >= 0 ? '+' : ''}$
                   {Math.abs(portfolioValue.totalGain).toLocaleString()} (
                   {portfolioValue.totalGainPercent > 0 ? '+' : ''}
-                  {portfolioValue.totalGainPercent != null ? portfolioValue.totalGainPercent.toFixed(2) : '0.00'}%)
+                  {portfolioValue.totalGainPercent != null
+                    ? portfolioValue.totalGainPercent.toFixed(2)
+                    : '0.00'}
+                  %)
                 </span>
               </div>
             )}
@@ -190,119 +118,31 @@ export function BalanceCard({
       </Card>
 
       {/* Deposit Modal */}
-      {showDepositModal && (
+      {showDepositModal && accountId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Deposit Funds</h2>
-                <button
-                  onClick={() => {
-                    setShowDepositModal(false);
-                    setAmount('');
-                  }}
-                  className="rounded-full p-1 hover:bg-muted"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Amount (USD)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    disabled={processing}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      setShowDepositModal(false);
-                      setAmount('');
-                    }}
-                    disabled={processing}
-                  >
-                    Cancel
-                  </Button>
-                  <Button className="flex-1" onClick={handleDeposit} disabled={processing}>
-                    {processing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      'Deposit'
-                    )}
-                  </Button>
-                </div>
-              </div>
+              <Deposit
+                accountId={accountId}
+                onSuccess={handleDepositSuccess}
+                onCancel={() => setShowDepositModal(false)}
+              />
             </CardContent>
           </Card>
         </div>
       )}
 
       {/* Withdraw Modal */}
-      {showWithdrawModal && (
+      {showWithdrawModal && accountId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Withdraw Funds</h2>
-                <button
-                  onClick={() => {
-                    setShowWithdrawModal(false);
-                    setAmount('');
-                  }}
-                  className="rounded-full p-1 hover:bg-muted"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Amount (USD)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    disabled={processing}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Available: ${balance.toLocaleString()}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      setShowWithdrawModal(false);
-                      setAmount('');
-                    }}
-                    disabled={processing}
-                  >
-                    Cancel
-                  </Button>
-                  <Button className="flex-1" onClick={handleWithdraw} disabled={processing}>
-                    {processing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      'Withdraw'
-                    )}
-                  </Button>
-                </div>
-              </div>
+              <Withdrawal
+                accountId={accountId}
+                availableBalance={balance}
+                onSuccess={handleWithdrawSuccess}
+                onCancel={() => setShowWithdrawModal(false)}
+              />
             </CardContent>
           </Card>
         </div>
