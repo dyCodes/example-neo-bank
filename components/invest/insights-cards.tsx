@@ -71,7 +71,7 @@ export function PersonalizedInsights() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold" style={{ color: '#081c14' }}>
+        <h2 className="text-2xl font-bold" style={{ color: '#083423' }}>
           Personalized Insights
         </h2>
         <p className="text-muted-foreground text-sm mt-1">
@@ -92,7 +92,7 @@ export function PersonalizedInsights() {
                     className="rounded-full p-2"
                     style={{ backgroundColor: '#edf9cd' }}
                   >
-                    <div style={{ color: '#081c14' }}>{getIcon(insight.type)}</div>
+                    <div style={{ color: '#083423' }}>{getIcon(insight.type)}</div>
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{insight.title}</h3>
@@ -113,7 +113,7 @@ export function PersonalizedInsights() {
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  style={{ borderColor: '#081c14', color: '#081c14' }}
+                  style={{ borderColor: '#083423', color: '#083423' }}
                 >
                   {insight.actionLabel}
                   <ArrowRight className="h-4 w-4 ml-2" />

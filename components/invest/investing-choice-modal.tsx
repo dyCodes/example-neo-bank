@@ -37,10 +37,10 @@ export function InvestingChoiceModal({
           <DialogHeader className="text-center space-y-2 mb-8">
             <div className="flex justify-center mb-4">
               <div className="rounded-full p-3" style={{ backgroundColor: 'rgba(8, 28, 20, 0.1)' }}>
-                <TrendingUp className="h-8 w-8" style={{ color: '#081c14' }} />
+                <TrendingUp className="h-8 w-8" style={{ color: '#083423' }} />
               </div>
             </div>
-            <DialogTitle className="text-2xl font-bold" style={{ color: '#081c14' }}>
+            <DialogTitle className="text-2xl font-bold" style={{ color: '#083423' }}>
               Choose Your Investing Style
             </DialogTitle>
             <DialogDescription className="text-base">
@@ -57,7 +57,7 @@ export function InvestingChoiceModal({
                   : 'border-2'
               }`}
               style={{
-                borderColor: selectedChoice === 'self-directed' ? '#081c14' : 'rgba(0, 0, 0, 0.1)',
+                borderColor: selectedChoice === 'self-directed' ? '#083423' : 'rgba(8, 52, 35, 0.1)',
               }}
               onClick={() => handleSelect('self-directed')}
             >
@@ -65,7 +65,7 @@ export function InvestingChoiceModal({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="rounded-full p-2" style={{ backgroundColor: 'rgba(8, 28, 20, 0.1)' }}>
-                      <TrendingUp className="h-6 w-6" style={{ color: '#081c14' }} />
+                      <TrendingUp className="h-6 w-6" style={{ color: '#083423' }} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg">Self-Directed</h3>
@@ -73,7 +73,7 @@ export function InvestingChoiceModal({
                     </div>
                   </div>
                   {selectedChoice === 'self-directed' && (
-                    <div className="rounded-full p-1" style={{ backgroundColor: '#081c14' }}>
+                    <div className="rounded-full p-1" style={{ backgroundColor: '#083423' }}>
                       <Check className="h-4 w-4 text-white" />
                     </div>
                   )}
@@ -81,25 +81,25 @@ export function InvestingChoiceModal({
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4" style={{ color: '#081c14' }} />
+                    <Check className="h-4 w-4" style={{ color: '#083423' }} />
                     <span className="text-sm">Full control over your investments</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4" style={{ color: '#081c14' }} />
+                    <Check className="h-4 w-4" style={{ color: '#083423' }} />
                     <span className="text-sm">No subscription fees</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4" style={{ color: '#081c14' }} />
+                    <Check className="h-4 w-4" style={{ color: '#083423' }} />
                     <span className="text-sm">Access to all trading features</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4" style={{ color: '#081c14' }} />
+                    <Check className="h-4 w-4" style={{ color: '#083423' }} />
                     <span className="text-sm">Buy and sell stocks anytime</span>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t">
-                  <div className="text-3xl font-bold mb-1" style={{ color: '#081c14' }}>Free</div>
+                  <div className="text-3xl font-bold mb-1" style={{ color: '#083423' }}>Free</div>
                   <div className="text-sm text-muted-foreground">No monthly fees</div>
                 </div>
 
@@ -108,8 +108,8 @@ export function InvestingChoiceModal({
                   variant={selectedChoice === 'self-directed' ? 'default' : 'outline'}
                   style={
                     selectedChoice === 'self-directed'
-                      ? { backgroundColor: '#081c14', color: 'white' }
-                      : { borderColor: '#081c14', color: '#081c14' }
+                      ? { backgroundColor: '#083423', color: 'white' }
+                      : { borderColor: '#083423', color: '#083423' }
                   }
                   onClick={(e) => {
                     e.stopPropagation();
@@ -130,7 +130,7 @@ export function InvestingChoiceModal({
                   : 'border-2'
               }`}
               style={{
-                borderColor: selectedChoice === 'ai-wealth' ? '#081c14' : 'rgba(8, 28, 20, 0.2)',
+                borderColor: selectedChoice === 'ai-wealth' ? '#083423' : 'rgba(8, 28, 20, 0.2)',
                 backgroundColor: '#edf9cd',
               }}
               onClick={() => handleSelect('ai-wealth')}
@@ -139,15 +139,15 @@ export function InvestingChoiceModal({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="rounded-full p-2" style={{ backgroundColor: 'rgba(8, 28, 20, 0.1)' }}>
-                      <Sparkles className="h-6 w-6" style={{ color: '#081c14' }} />
+                      <Sparkles className="h-6 w-6" style={{ color: '#083423' }} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg" style={{ color: '#081c14' }}>AI Wealth Management</h3>
+                      <h3 className="font-semibold text-lg" style={{ color: '#083423' }}>AI Wealth Management</h3>
                       <p className="text-sm text-muted-foreground">Automated & Smart</p>
                     </div>
                   </div>
                   {selectedChoice === 'ai-wealth' && (
-                    <div className="rounded-full p-1" style={{ backgroundColor: '#081c14' }}>
+                    <div className="rounded-full p-1" style={{ backgroundColor: '#083423' }}>
                       <Check className="h-4 w-4 text-white" />
                     </div>
                   )}
@@ -156,7 +156,7 @@ export function InvestingChoiceModal({
                 <div className="space-y-2">
                   {AI_WEALTH_MANAGEMENT_FEATURES.map((feature, index) => (
                     <div key={index} className="flex items-center gap-2">
-                      <Check className="h-4 w-4" style={{ color: '#081c14' }} />
+                      <Check className="h-4 w-4" style={{ color: '#083423' }} />
                       <span className="text-sm">{feature}</span>
                     </div>
                   ))}
@@ -164,7 +164,7 @@ export function InvestingChoiceModal({
 
                 <div className="pt-4 border-t">
                   <div className="flex items-baseline gap-2">
-                    <div className="text-3xl font-bold" style={{ color: '#081c14' }}>${AI_WEALTH_MANAGEMENT_PRICE}</div>
+                    <div className="text-3xl font-bold" style={{ color: '#083423' }}>${AI_WEALTH_MANAGEMENT_PRICE}</div>
                     <div className="text-sm text-muted-foreground">/month</div>
                   </div>
                   <div className="text-sm text-muted-foreground">Cancel anytime</div>
@@ -175,8 +175,8 @@ export function InvestingChoiceModal({
                   variant={selectedChoice === 'ai-wealth' ? 'default' : 'outline'}
                   style={
                     selectedChoice === 'ai-wealth'
-                      ? { backgroundColor: '#081c14', color: 'white' }
-                      : { borderColor: '#081c14', color: '#081c14' }
+                      ? { backgroundColor: '#083423', color: 'white' }
+                      : { borderColor: '#083423', color: '#083423' }
                   }
                   onClick={(e) => {
                     e.stopPropagation();

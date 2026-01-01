@@ -53,7 +53,7 @@ export function NetWorthChart() {
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-semibold">{dataPoint.month}</p>
-          <p className="text-sm" style={{ color: '#081c14' }}>
+          <p className="text-sm" style={{ color: '#083423' }}>
             Net Worth: {formatCurrency(dataPoint.netWorth)}
           </p>
           {dataPoint.event && (
@@ -94,13 +94,13 @@ export function NetWorthChart() {
           <div>
             <CardTitle>Net Worth Growth</CardTitle>
             <div className="mt-2">
-              <p className="text-3xl font-bold" style={{ color: '#081c14' }}>
+              <p className="text-3xl font-bold" style={{ color: '#083423' }}>
                 {formatCurrency(currentNetWorth)}
               </p>
               <p className="text-sm text-muted-foreground">Current Net Worth</p>
             </div>
           </div>
-          <Badge variant="outline" style={{ borderColor: '#081c14', color: '#081c14' }}>
+          <Badge variant="outline" style={{ borderColor: '#083423', color: '#083423' }}>
             Example Portfolio
           </Badge>
         </div>
@@ -111,7 +111,7 @@ export function NetWorthChart() {
             <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#081c14" stopOpacity={0.3} />
+                  <stop offset="5%" stopColor="#083423" stopOpacity={0.3} />
                   <stop offset="95%" stopColor="#edf9cd" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
@@ -131,7 +131,7 @@ export function NetWorthChart() {
               <Area
                 type="monotone"
                 dataKey="netWorth"
-                stroke="#081c14"
+                stroke="#083423"
                 strokeWidth={2}
                 fill="url(#colorNetWorth)"
               />
@@ -148,9 +148,9 @@ export function NetWorthChart() {
                   className="flex items-start gap-2 p-2 rounded-lg"
                   style={{ backgroundColor: '#edf9cd' }}
                 >
-                  <div style={{ color: '#081c14' }}>{getEventIcon(dataPoint.event!.type)}</div>
+                  <div style={{ color: '#083423' }}>{getEventIcon(dataPoint.event!.type)}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium" style={{ color: '#081c14' }}>
+                    <p className="text-xs font-medium" style={{ color: '#083423' }}>
                       {dataPoint.month}
                     </p>
                     <p className="text-xs text-muted-foreground">{dataPoint.event!.label}</p>

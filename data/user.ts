@@ -24,7 +24,7 @@ export const userData: UserData = {
   balance: 125000.5,
   accountNumber: '1234567890',
   name: 'John Doe',
-  email: 'demo@neobank.com',
+  email: 'demo@xyzbank.com',
   // Contact information
   phoneNumber: '+15555555555',
   streetAddress: ['123 Main St'],

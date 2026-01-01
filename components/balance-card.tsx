@@ -44,9 +44,15 @@ export function BalanceCard({
 
   return (
     <>
-      <Card className={cn('bg-gradient-to-br from-primary to-primary/80', className)}>
+      <Card 
+        className={cn('', className)}
+        style={{ 
+          background: 'linear-gradient(to bottom right, #083423, rgba(8, 52, 35, 0.8))',
+          color: 'white'
+        }}
+      >
         <CardContent className="p-6">
-          <div className="flex items-start justify-between text-primary-foreground">
+          <div className="flex items-start justify-between" style={{ color: 'white' }}>
             <div className="flex flex-col gap-1">
               <p className="text-sm opacity-90">{label}</p>
               {accountNumber && <p className="text-xs opacity-75">Account: {accountNumber}</p>}
@@ -60,7 +66,7 @@ export function BalanceCard({
             </button>
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-primary-foreground">
+            <p className="text-3xl font-bold" style={{ color: 'white' }}>
               {isVisible
                 ? `$${balance.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
@@ -97,7 +103,8 @@ export function BalanceCard({
               <Button
                 size="sm"
                 variant="secondary"
-                className="flex-1 bg-white/20 hover:bg-white/30 text-primary-foreground border border-white/30"
+                className="flex-1 bg-white/20 hover:bg-white/30 border border-white/30"
+                style={{ color: 'white' }}
                 onClick={() => setShowDepositModal(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -106,7 +113,8 @@ export function BalanceCard({
               <Button
                 size="sm"
                 variant="secondary"
-                className="flex-1 bg-white/20 hover:bg-white/30 text-primary-foreground border border-white/30"
+                className="flex-1 bg-white/20 hover:bg-white/30 border border-white/30"
+                style={{ color: 'white' }}
                 onClick={() => setShowWithdrawModal(true)}
               >
                 <Minus className="h-4 w-4 mr-2" />
@@ -119,7 +127,7 @@ export function BalanceCard({
 
       {/* Deposit Modal */}
       {showDepositModal && accountId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(8, 52, 35, 0.5)' }}>
           <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
             <CardContent className="p-6">
               <Deposit
@@ -134,7 +142,7 @@ export function BalanceCard({
 
       {/* Withdraw Modal */}
       {showWithdrawModal && accountId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(8, 52, 35, 0.5)' }}>
           <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
             <CardContent className="p-6">
               <Withdrawal

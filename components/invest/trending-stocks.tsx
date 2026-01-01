@@ -36,7 +36,7 @@ export function TrendingStocks() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold" style={{ color: '#081c14' }}>
+        <h2 className="text-2xl font-bold" style={{ color: '#083423' }}>
           Top Trending Stocks
         </h2>
         <p className="text-muted-foreground text-sm mt-1">
@@ -59,7 +59,7 @@ export function TrendingStocks() {
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-sm" style={{ color: '#081c14' }}>
+                      <p className="font-bold text-sm" style={{ color: '#083423' }}>
                         {stock.symbol}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
@@ -69,7 +69,7 @@ export function TrendingStocks() {
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-lg font-semibold" style={{ color: '#081c14' }}>
+                    <p className="text-lg font-semibold" style={{ color: '#083423' }}>
                       ${stock.price.toFixed(2)}
                     </p>
                     <div className="flex items-center gap-1">

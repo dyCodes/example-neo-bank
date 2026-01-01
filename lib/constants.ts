@@ -1,8 +1,8 @@
 // App constants
-export const APP_NAME = 'Neo Bank';
+export const APP_NAME = 'XYZ Bank';
 
 // Authentication constants
-export const DEFAULT_EMAIL = 'demo@neobank.com';
+export const DEFAULT_EMAIL = 'demo@xyzbank.com';
 
 // API constants
 export const API_BASE_URL = 'http://localhost:3001';
@@ -19,4 +19,4 @@ export const AI_WEALTH_MANAGEMENT_FEATURES = [
 ];
 
 // Invest theme color
-export const INVEST_PRIMARY_COLOR = '#061c13';
+export const INVEST_PRIMARY_COLOR = '#083423';

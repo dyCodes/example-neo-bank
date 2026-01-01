@@ -48,7 +48,7 @@ export function SidebarNav() {
               viewBox="0 0 40 40"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="text-primary"
+              style={{ color: '#083423' }}
             >
               <rect width="40" height="40" rx="8" fill="currentColor" opacity="0.1" />
               <path
@@ -56,7 +56,7 @@ export function SidebarNav() {
                 fill="currentColor"
               />
             </svg>
-            <span className="text-xl font-bold">Neo Bank</span>
+            <span className="text-xl font-bold">XYZ Bank</span>
           </div>
         </div>
 

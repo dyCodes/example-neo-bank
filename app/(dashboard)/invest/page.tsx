@@ -209,7 +209,7 @@ export default function Invest() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold" style={{ color: '#081c14' }}>Invest</h1>
+        <h1 className="text-3xl font-bold" style={{ color: '#083423' }}>Invest</h1>
         <p className="text-muted-foreground mt-1">Manage your investment portfolio</p>
       </div>
 
@@ -230,7 +230,7 @@ export default function Invest() {
         <Button 
           onClick={handleBuy} 
           className="h-auto flex-col gap-2 py-4"
-          style={{ backgroundColor: '#081c14', color: 'white' }}
+          style={{ backgroundColor: '#083423', color: 'white' }}
         >
           <TrendingUp className="h-5 w-5" />
           <span className="text-sm">Buy</span>
@@ -239,9 +239,9 @@ export default function Invest() {
           onClick={handleSell} 
           variant="outline" 
           className="h-auto flex-col gap-2 py-4"
-          style={{ borderColor: '#081c14', color: '#081c14' }}
+          style={{ borderColor: '#083423', color: '#083423' }}
         >
-          <TrendingUp className="h-5 w-5 rotate-180" style={{ color: '#081c14' }} />
+          <TrendingUp className="h-5 w-5 rotate-180" style={{ color: '#083423' }} />
           <span className="text-sm">Sell</span>
         </Button>
       </div>
@@ -263,22 +263,22 @@ export default function Invest() {
               <TabsList className="grid w-full grid-cols-3" style={{ backgroundColor: '#edf9cd' }}>
                 <TabsTrigger 
                   value="positions" 
-                  className="hover:bg-[#081c14]/10 [&.bg-background]:bg-[#081c14]/20 [&.bg-background]:text-[#081c14]"
-                  style={{ color: '#081c14' }}
+                  className="hover:bg-[#083423]/10 [&.bg-background]:bg-[#083423]/20 [&.bg-background]:text-[#083423]"
+                  style={{ color: '#083423' }}
                 >
                   Positions
                 </TabsTrigger>
                 <TabsTrigger 
                   value="orders"
-                  className="hover:bg-[#081c14]/10 [&.bg-background]:bg-[#081c14]/20 [&.bg-background]:text-[#081c14]"
-                  style={{ color: '#081c14' }}
+                  className="hover:bg-[#083423]/10 [&.bg-background]:bg-[#083423]/20 [&.bg-background]:text-[#083423]"
+                  style={{ color: '#083423' }}
                 >
                   Orders
                 </TabsTrigger>
                 <TabsTrigger 
                   value="transactions"
-                  className="hover:bg-[#081c14]/10 [&.bg-background]:bg-[#081c14]/20 [&.bg-background]:text-[#081c14]"
-                  style={{ color: '#081c14' }}
+                  className="hover:bg-[#083423]/10 [&.bg-background]:bg-[#083423]/20 [&.bg-background]:text-[#083423]"
+                  style={{ color: '#083423' }}
                 >
                   Transactions
                 </TabsTrigger>
@@ -300,7 +300,7 @@ export default function Invest() {
                               <Link
                                 href={`/invest/assets/${position.symbol}`}
                                 className="font-semibold hover:underline cursor-pointer"
-                                style={{ color: '#081c14' }}
+                                style={{ color: '#083423' }}
                               >
                                 {position.symbol}
                               </Link>
@@ -402,7 +402,7 @@ export default function Invest() {
                                 <Link
                                   href={`/invest/assets/${order.symbol}`}
                                   className="font-semibold hover:underline cursor-pointer"
-                                  style={{ color: '#081c14' }}
+                                  style={{ color: '#083423' }}
                                 >
                                   {order.symbol}
                                 </Link>

@@ -1,5 +1,5 @@
 // Simple authentication state management using localStorage
-const AUTH_KEY = 'neobank_auth';
+const AUTH_KEY = 'xyzbank_auth';
 
 export interface User {
   email: string;
