@@ -14,7 +14,12 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DEFAULT_EMAIL } from '@/lib/constants';
+import {
+  DEFAULT_EMAIL,
+  INVESTOR_EMAIL,
+  DEMO_INVESTOR_ACCOUNT_ID,
+  DEMO_INVESTOR_INVESTING_CHOICE,
+} from '@/lib/constants';
 import { setAuth } from '@/lib/auth';
 import { mockUserAccount } from '@/lib/mock-data';
 
@@ -44,29 +49,52 @@ export default function SignIn() {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    // Demo login: check if email matches default and password is at least 8 characters
-    const isEmailValid = email === DEFAULT_EMAIL;
+    // Demo login: check if email matches default or investor email and password is at least 8 characters
+    const isEmailValid = email === DEFAULT_EMAIL || email === INVESTOR_EMAIL;
     const isPasswordValid = password.length >= 8;
 
     if (isEmailValid && isPasswordValid) {
-      // Generate a unique email to avoid email constraint violations
-      const uniqueEmail = generateUniqueEmail(email);
+      // Check if this is the investor email (has completed investment onboarding)
+      if (email === INVESTOR_EMAIL) {
+        // Investor user with completed investment account
+        setAuth({
+          email: INVESTOR_EMAIL,
+          name: mockUserAccount.name,
+          // Include all user account fields
+          phoneNumber: mockUserAccount.phoneNumber,
+          streetAddress: mockUserAccount.streetAddress,
+          city: mockUserAccount.city,
+          state: mockUserAccount.state,
+          postalCode: mockUserAccount.postalCode,
+          country: mockUserAccount.country,
+          firstName: mockUserAccount.firstName,
+          lastName: mockUserAccount.lastName,
+          dateOfBirth: mockUserAccount.dateOfBirth,
+          countryOfBirth: mockUserAccount.countryOfBirth,
+          // Investment account already set up
+          externalAccountId: DEMO_INVESTOR_ACCOUNT_ID,
+          investingChoice: DEMO_INVESTOR_INVESTING_CHOICE,
+        });
+      } else {
+        // Regular demo user - generate a unique email to avoid email constraint violations
+        const uniqueEmail = generateUniqueEmail(email);
 
-      setAuth({
-        email: uniqueEmail,
-        name: mockUserAccount.name,
-        // Include all user account fields
-        phoneNumber: mockUserAccount.phoneNumber,
-        streetAddress: mockUserAccount.streetAddress,
-        city: mockUserAccount.city,
-        state: mockUserAccount.state,
-        postalCode: mockUserAccount.postalCode,
-        country: mockUserAccount.country,
-        firstName: mockUserAccount.firstName,
-        lastName: mockUserAccount.lastName,
-        dateOfBirth: mockUserAccount.dateOfBirth,
-        countryOfBirth: mockUserAccount.countryOfBirth,
-      });
+        setAuth({
+          email: uniqueEmail,
+          name: mockUserAccount.name,
+          // Include all user account fields
+          phoneNumber: mockUserAccount.phoneNumber,
+          streetAddress: mockUserAccount.streetAddress,
+          city: mockUserAccount.city,
+          state: mockUserAccount.state,
+          postalCode: mockUserAccount.postalCode,
+          country: mockUserAccount.country,
+          firstName: mockUserAccount.firstName,
+          lastName: mockUserAccount.lastName,
+          dateOfBirth: mockUserAccount.dateOfBirth,
+          countryOfBirth: mockUserAccount.countryOfBirth,
+        });
+      }
       toast.success('Signed in successfully!');
       router.push('/dashboard');
     } else {

@@ -1,22 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  XAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from 'recharts';
+import { XAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getNetWorthChartData, type NetWorthDataPoint } from '@/lib/mock-data';
 import { TrendingUp, Target, Zap, Calendar } from 'lucide-react';
+import { getAuth } from '@/lib/auth';
 
 export function NetWorthChart() {
   const [data, setData] = useState<NetWorthDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const user = getAuth();
+  const accountId = user?.externalAccountId;
 
   useEffect(() => {
     getNetWorthChartData().then((chartData) => {
@@ -100,9 +96,12 @@ export function NetWorthChart() {
               <p className="text-sm text-muted-foreground">Current Net Worth</p>
             </div>
           </div>
-          <Badge variant="outline" style={{ borderColor: '#083423', color: '#083423' }}>
-            Example Portfolio
-          </Badge>
+
+          {!accountId && (
+            <Badge variant="outline" style={{ borderColor: '#083423', color: '#083423' }}>
+              Example Portfolio
+            </Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -163,4 +162,3 @@ export function NetWorthChart() {
     </Card>
   );
 }
-
