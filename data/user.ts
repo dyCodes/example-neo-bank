@@ -21,7 +21,7 @@ export interface UserData {
 }
 
 export const userData: UserData = {
-  balance: 125000.5,
+  balance: 125000.55,
   accountNumber: '1234567890',
   name: 'John Doe',
   email: 'demo@xyzbank.com',

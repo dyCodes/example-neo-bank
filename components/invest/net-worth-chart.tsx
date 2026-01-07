@@ -8,7 +8,7 @@ import { getNetWorthChartData, type NetWorthDataPoint } from '@/lib/mock-data';
 import { TrendingUp, Target, Zap, Calendar } from 'lucide-react';
 import { getAuth } from '@/lib/auth';
 
-export function NetWorthChart() {
+export function NetWorthChart({ accountBalance }: { accountBalance?: number }) {
   const [data, setData] = useState<NetWorthDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const user = getAuth();
@@ -25,8 +25,8 @@ export function NetWorthChart() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(value);
   };
 
@@ -79,7 +79,12 @@ export function NetWorthChart() {
     );
   }
 
-  const currentNetWorth = data.length > 0 ? data[data.length - 1].netWorth : 0;
+  // Prefer the accountBalance passed from parent to keep Net Worth aligned with Investment Balance
+  const currentNetWorth = typeof accountBalance === 'number'
+    ? accountBalance
+    : data.length > 0
+      ? data[data.length - 1].netWorth
+      : 0;
   const startMonth = data.length > 0 ? data[0].month : '';
   const endMonth = data.length > 0 ? data[data.length - 1].month : '';
 

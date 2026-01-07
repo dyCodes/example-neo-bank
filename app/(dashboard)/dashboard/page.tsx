@@ -9,11 +9,8 @@ import { Button } from '@/components/ui/button';
 import { BalanceCard } from '@/components/balance-card';
 import { TransactionItem } from '@/components/transaction-item';
 import { Separator } from '@/components/ui/separator';
-import {
-  mockUserAccount,
-  getTransactions,
-  type Transaction,
-} from '@/lib/mock-data';
+import { mockUserAccount, getTransactions, type Transaction } from '@/lib/mock-data';
+import { getInAppBalance } from '@/lib/auth';
 import { InvestingAnnouncementPopup } from '@/components/invest/announcement-popup';
 import { InvestingInvitation } from '@/components/invest/investing-invitation';
 import { InvestingChoiceModal, type InvestingChoice } from '@/components/invest/investing-choice-modal';
@@ -38,6 +35,11 @@ export default function Dashboard() {
   }, []);
 
   const recentTransactions = transactions.slice(0, 5);
+  const [inAppBalance, setInAppBalance] = useState<number>(0);
+
+  useEffect(() => {
+    setInAppBalance(getInAppBalance());
+  }, []);
 
   const handleGetStarted = () => {
     setShowChoiceModal(true);
@@ -84,7 +86,7 @@ export default function Dashboard() {
 
         {/* Balance Card */}
         <BalanceCard
-          balance={mockUserAccount.balance}
+          balance={inAppBalance}
           accountNumber={mockUserAccount.accountNumber}
         />
 

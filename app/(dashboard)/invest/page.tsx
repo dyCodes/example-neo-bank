@@ -256,7 +256,7 @@ export default function Invest() {
       {isAIWealth && (
         <>
           {/* Net Worth Growth Chart */}
-          <NetWorthChart />
+          <NetWorthChart accountBalance={accountBalance} />
         </>
       )}
 

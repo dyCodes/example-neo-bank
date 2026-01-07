@@ -19,6 +19,7 @@ import { InvestmentService } from '@/services/investment.service';
 import { PlaidLink } from '@/components/plaid/plaid-link';
 import { PlaidService, type ConnectedAccount } from '@/services/plaid.service';
 import { toast } from 'sonner';
+import { getInAppBalance, setInAppBalance } from '@/lib/auth';
 
 interface DepositProps {
   accountId: string;
@@ -26,7 +27,7 @@ interface DepositProps {
   onCancel?: () => void;
 }
 
-type PaymentMethod = 'card' | 'plaid';
+type PaymentMethod = 'card' | 'plaid' | 'balance';
 type Step = 1 | 2;
 
 export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
@@ -46,6 +47,12 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
   const [selectedPlaidAccount, setSelectedPlaidAccount] = useState<string | null>(null);
   const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>([]);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [inAppBalance, setInAppBalanceState] = useState<number>(0);
+
+  // Initialize in-app balance from localStorage or mock
+  useEffect(() => {
+    setInAppBalanceState(getInAppBalance());
+  }, []);
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
@@ -181,7 +188,7 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
       }
       return true;
     }
-    if (paymentMethod === 'card') {
+  if (paymentMethod === 'card') {
       const cardNumberDigits = cardNumber.replace(/\s/g, '');
       if (cardNumberDigits.length < 13 || cardNumberDigits.length > 19) {
         toast.error('Please enter a valid card number');
@@ -211,6 +218,18 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
       }
       if (!cardholderName || cardholderName.trim().length < 2) {
         toast.error('Please enter the cardholder name');
+        return false;
+      }
+      return true;
+    }
+    if (paymentMethod === 'balance') {
+      const amt = parseFloat(amount || '0');
+      if (Number.isNaN(amt) || amt <= 0) {
+        toast.error('Please enter a valid amount');
+        return false;
+      }
+      if (amt > inAppBalance) {
+        toast.error('Insufficient in-app balance');
         return false;
       }
       return true;
@@ -279,23 +298,54 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
       }
 
       // Handle card payment
-      const fundingDetails = {
-        funding_type: 'fiat' as const,
-        fiat_currency: 'USD' as const,
-        bank_account_id: `card_${cardNumber.replace(/\s/g, '').slice(-4)}`,
-        method: 'ach' as const, // Using ACH as the method, but in reality this would be 'card'
-      };
+      if (paymentMethod === 'card') {
+        const fundingDetails = {
+          funding_type: 'fiat' as const,
+          fiat_currency: 'USD' as const,
+          bank_account_id: `card_${cardNumber.replace(/\s/g, '').slice(-4)}`,
+          method: 'ach' as const, // Using ACH as the method, but in reality this would be 'card'
+        };
 
-      await InvestmentService.fundAccount({
-        account_id: accountId,
-        amount: amountStr,
-        funding_details: fundingDetails,
-        description: `Card deposit of $${amountStr}`,
-        external_reference_id: `card_${Date.now()}`,
-      });
+        await InvestmentService.fundAccount({
+          account_id: accountId,
+          amount: amountStr,
+          funding_details: fundingDetails,
+          description: `Card deposit of $${amountStr}`,
+          external_reference_id: `card_${Date.now()}`,
+        });
 
-      toast.success('Deposit successful!');
-      onSuccess?.();
+        toast.success('Deposit successful!');
+        onSuccess?.();
+        return;
+      }
+
+      // Handle in-app balance (frontend-only), still call fundAccount
+      if (paymentMethod === 'balance') {
+        const fundingDetails = {
+          funding_type: 'fiat' as const,
+          fiat_currency: 'USD' as const,
+          bank_account_id: 'in_app_balance',
+          method: 'ach' as const, // placeholder method to satisfy API typing
+        };
+
+        await InvestmentService.fundAccount({
+          account_id: accountId,
+          amount: amountStr,
+          funding_details: fundingDetails,
+          description: `In-app balance deposit of $${amountStr}`,
+          external_reference_id: `inapp_${Date.now()}`,
+        });
+
+        // Update In-app balance
+        const amt = parseFloat(amountStr);
+        const newBalance = Math.max(0, inAppBalance - (Number.isNaN(amt) ? 0 : amt));
+        setInAppBalance(newBalance);
+        setInAppBalanceState(newBalance);
+
+        toast.success('Deposit successful!');
+        onSuccess?.();
+        return;
+      }
     } catch (error: any) {
       // Error message is already extracted by apiClient interceptor
       const errorMessage = error.message || 'Failed to process deposit';
@@ -346,6 +396,7 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
               disabled={processing}
             >
               <option value="">Select payment method</option>
+              <option value="balance">In-app Account Balance</option>
               <option value="plaid">Bank Transfer (ACH) via Plaid</option>
               <option value="card">Card Payment - Instant deposit</option>
             </Select>
@@ -358,6 +409,14 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
               <p className="text-xs text-muted-foreground">
                 Instant deposit with credit or debit card
               </p>
+            )}
+            {paymentMethod === 'balance' && (
+              <>
+                <div className="text-xs text-muted-foreground">
+                  Available balance: $
+                {inAppBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              </>
             )}
           </div>
         </div>
@@ -518,6 +577,17 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
                   card details.
                 </p>
               </div>
+            </>
+          ) : paymentMethod === 'balance' ? (
+            <>
+              <div className="space-y-2">
+                <div className="p-3 border rounded-md bg-muted/50 text-sm">
+                <Label className='pb-2 font-semibold'>Confirm Deposit</Label>
+
+                 <p>This deposit will use your in-app account balance.</p>
+                </div>
+              </div>
+
             </>
           ) : null}
         </div>
