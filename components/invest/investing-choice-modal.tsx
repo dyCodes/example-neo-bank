@@ -219,9 +219,19 @@ export function InvestingChoiceModal({
             </Card>
           </div>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
             <p className="text-xs text-muted-foreground">
               You can change your preference later in settings
+            </p>
+            <p className="text-sm text-muted-foreground pt-1">
+              Powered by{' '}
+              <a
+                href="https://bluumfinance.com"
+                target="_blank"
+                className="text-primary font-semibold"
+              >
+                Bluum Finance
+              </a>
             </p>
           </div>
         </div>

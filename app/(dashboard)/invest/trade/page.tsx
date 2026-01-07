@@ -47,6 +47,7 @@ export default function TradeStock() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [positions, setPositions] = useState<Position[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasAutoLookedUp, setHasAutoLookedUp] = useState(false);
@@ -74,11 +75,15 @@ export default function TradeStock() {
         setAccountId(accId);
         // Load positions for sell orders
         if (orderSide === 'sell') {
+          setLoadingPositions(true);
           try {
             const positionsData = await InvestmentService.getPositions(accId);
             setPositions(positionsData);
           } catch (error) {
             console.error('Error loading positions:', error);
+            setPositions([]);
+          } finally {
+            setLoadingPositions(false);
           }
         }
       } catch (error) {
@@ -93,14 +98,20 @@ export default function TradeStock() {
   // When switching to sell, load positions
   useEffect(() => {
     if (orderSide === 'sell' && accountId) {
+      setLoadingPositions(true);
       InvestmentService.getPositions(accountId)
         .then(setPositions)
         .catch((error) => {
           console.error('Error loading positions:', error);
+          setPositions([]);
+        })
+        .finally(() => {
+          setLoadingPositions(false);
         });
     } else {
       setPositions([]);
       setSelectedPosition(null);
+      setLoadingPositions(false);
     }
   }, [orderSide, accountId]);
 
@@ -435,23 +446,7 @@ export default function TradeStock() {
                       <TrendingDown className="h-5 w-5 text-red-600" />
                     )}
                   </div>
-                  {selectedPosition && (
-                    <div className="mb-2 p-2 bg-background rounded text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Owned:</span>
-                        <span className="font-medium">{selectedPosition.shares} shares</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Avg Price:</span>
-                        <span className="font-medium">
-                          $
-                          {selectedPosition.purchasePrice != null
-                            ? selectedPosition.purchasePrice.toFixed(2)
-                            : 'N/A'}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+
                   {assetPrice !== null ? (
                     <div className="mt-2">
                       <p className="text-2xl font-bold">${assetPrice.toFixed(2)}</p>
@@ -482,6 +477,86 @@ export default function TradeStock() {
                     </Button>
                   </div>
                 </div>
+              )}
+
+              {/* Owned Assets List - Only show on sell side if user owns assets */}
+              {orderSide === 'sell' && (loadingPositions || positions.length > 0) && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Your Holdings</Label>
+                    {loadingPositions ? (
+                      <div className="flex items-center justify-center py-6">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mr-2" />
+                        <span className="text-sm text-muted-foreground">
+                          Loading your holdings...
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                        {positions.map((position) => (
+                          <button
+                            key={position.symbol}
+                            type="button"
+                            onClick={() => {
+                              setSymbolQuery(position.symbol);
+                              handleLookupAsset(position.symbol);
+                            }}
+                            className={`w-full text-left p-3 rounded-md border transition-colors ${
+                              selectedAsset?.symbol === position.symbol
+                                ? 'border-primary bg-primary/5'
+                                : 'border-border hover:bg-muted/50'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-semibold text-sm">
+                                    {position.symbol}
+                                  </span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {position.shares}{' '}
+                                    {position.shares === 1 ? 'share' : 'shares'}
+                                  </Badge>
+                                </div>
+                                {position.name && position.name !== position.symbol && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {position.name}
+                                  </p>
+                                )}
+
+                                {position.value != null && (
+                                  <div className="text-sm font-medium text-muted-foreground mt-2">
+                                    ${position.value.toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="text-right ml-4">
+                                {position.currentPrice != null && (
+                                  <div className="font-medium text-sm">
+                                    ${position.currentPrice.toFixed(2)}
+                                  </div>
+                                )}
+
+                                {position.gain != null && position.gainPercent != null && (
+                                  <div
+                                    className={`text-xs font-medium mt-1 ${
+                                      position.gain >= 0 ? 'text-green-600' : 'text-red-600'
+                                    }`}
+                                  >
+                                    {position.gain >= 0 ? '+' : ''}
+                                    {position.gainPercent.toFixed(2)}%
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
