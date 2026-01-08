@@ -14,20 +14,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvestmentService } from '@/services/investment.service';
 import { toast } from 'sonner';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from 'recharts';
+import TradingViewChart from '@/components/invest/trading-view-chart';
 
 interface Asset {
   id: string;
@@ -69,10 +58,7 @@ export default function AssetDetailsPage() {
   const symbol = (params.symbol as string)?.toUpperCase();
 
   const [asset, setAsset] = useState<Asset | null>(null);
-  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [chartLoading, setChartLoading] = useState(false);
-  const [timeframe, setTimeframe] = useState<Timeframe>('1Month');
   const [error, setError] = useState<string | null>(null);
 
   // Load asset details
@@ -114,52 +100,6 @@ export default function AssetDetailsPage() {
     loadAsset();
   }, [symbol]);
 
-  // Load chart data
-  useEffect(() => {
-    const loadChart = async () => {
-      if (!symbol) return;
-
-      try {
-        setChartLoading(true);
-
-        // Calculate limit based on timeframe
-        const limits: Record<Timeframe, number> = {
-          '1Day': 100,
-          '1Week': 100,
-          '1Month': 100,
-        };
-
-        const data = await InvestmentService.getChartData(
-          symbol,
-          timeframe,
-          limits[timeframe]
-        );
-
-        setChartData(data);
-      } catch (err: any) {
-        console.error('Error loading chart:', err);
-        toast.error('Failed to load chart data');
-      } finally {
-        setChartLoading(false);
-      }
-    };
-
-    loadChart();
-  }, [symbol, timeframe]);
-
-  // Format chart data for recharts
-  const formattedChartData = chartData?.bars?.map((bar) => ({
-    timestamp: new Date(bar.timestamp).getTime(),
-    date: new Date(bar.timestamp).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    }),
-    open: bar.open,
-    high: bar.high,
-    low: bar.low,
-    close: bar.close,
-    volume: bar.volume,
-  }));
 
   const currentPrice = asset?.current_price || asset?.price;
   const priceChange = asset?.change ?? 0;
@@ -213,7 +153,7 @@ export default function AssetDetailsPage() {
         </div>
         <Button onClick={() => router.push(`/invest/trade?side=buy&symbol=${asset.symbol}`)}>
           <TrendingUp className="h-4 w-4 mr-2" />
-          Trade
+          Trade Asset
         </Button>
       </div>
 
@@ -354,96 +294,19 @@ export default function AssetDetailsPage() {
         </Card>
       </div>
 
-      {/* Price History Chart */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden gap-4">
+        <CardHeader className="pb-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
               <CardTitle>Price History</CardTitle>
             </div>
-            <Tabs value={timeframe} onValueChange={(v) => setTimeframe(v as Timeframe)}>
-              <TabsList>
-                <TabsTrigger value="1Day">1D</TabsTrigger>
-                <TabsTrigger value="1Week">1W</TabsTrigger>
-                <TabsTrigger value="1Month">1M</TabsTrigger>
-              </TabsList>
-            </Tabs>
           </div>
         </CardHeader>
-        <CardContent>
-          {chartLoading ? (
-            <div className="flex items-center justify-center h-[400px]">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : formattedChartData && formattedChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={400}>
-              <AreaChart data={formattedChartData}>
-                <defs>
-                  <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor={isPositive ? '#22c55e' : '#ef4444'}
-                      stopOpacity={0.3}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor={isPositive ? '#22c55e' : '#ef4444'}
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="date"
-                  className="text-xs"
-                  tick={{ fill: 'currentColor' }}
-                  tickFormatter={(value) => {
-                    // Show fewer labels for better readability
-                    const index = formattedChartData.findIndex((d) => d.date === value);
-                    if (formattedChartData.length > 20) {
-                      return index % Math.ceil(formattedChartData.length / 6) === 0
-                        ? value
-                        : '';
-                    }
-                    return value;
-                  }}
-                />
-                <YAxis
-                  className="text-xs"
-                  tick={{ fill: 'currentColor' }}
-                  domain={['auto', 'auto']}
-                  tickFormatter={(value) => `$${value.toFixed(2)}`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                  formatter={(value: number | undefined) => [
-                    value != null ? `$${value.toFixed(2)}` : 'N/A',
-                    'Price',
-                  ]}
-                  labelFormatter={(label) => {
-                    const dataPoint = formattedChartData.find((d) => d.date === label);
-                    return dataPoint ? new Date(dataPoint.timestamp).toLocaleString() : label;
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="close"
-                  stroke={isPositive ? '#22c55e' : '#ef4444'}
-                  strokeWidth={2}
-                  fill="url(#colorPrice)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-[400px]">
-              <p className="text-muted-foreground">No chart data available</p>
-            </div>
-          )}
+        <CardContent className="p-0">
+          <div className="h-[500px] w-full">
+            <TradingViewChart symbol={symbol} theme="light" />
+          </div>
         </CardContent>
       </Card>
     </div>
