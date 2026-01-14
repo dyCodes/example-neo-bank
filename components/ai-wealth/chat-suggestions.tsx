@@ -95,20 +95,17 @@ export function ChatSuggestions({ onSuggestionClick }: ChatSuggestionsProps) {
       </div>
 
       {/* Suggestion Questions */}
-      <div className="w-full max-w-2xl px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <div className="w-full max-w-2xl">
+        <div className="flex flex-row gap-4 justify-center flex-wrap">
           {SUGGESTIONS.map((suggestion, index) => (
             <Button
               key={index}
               variant="outline"
-              className="w-full h-auto py-4 px-0 rounded-xl border hover:bg-[#edf9cd]/50 transition-all bg-white/80 backdrop-blur-sm"
+              className="w-fit h-auto py-4 px-0 rounded-xl border hover:bg-[#edf9cd]/50 transition-all bg-white/80 backdrop-blur-sm"
               style={{ borderColor: '#edf9cd' }}
               onClick={() => onSuggestionClick(suggestion)}
             >
-              <span
-                className="text-xs sm:text-sm font-medium px-4 sm:px-5 text-left break-words"
-                style={{ color: '#083423' }}
-              >
+              <span className="text-sm font-medium px-5" style={{ color: '#083423' }}>
                 {suggestion}
               </span>
             </Button>
