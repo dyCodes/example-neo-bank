@@ -90,7 +90,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="w-full flex flex-col h-[calc(100vh-4rem)] min-h-[100vh] lg:max-h-[900px] relative overflow-x-hidden">
+    <div className="w-full flex flex-col h-[calc(100vh-3rem)] lg:max-h-[900px] relative overflow-x-hidden">
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#edf9cd]/30 via-transparent to-[#083423]/5 pointer-events-none" />
 
