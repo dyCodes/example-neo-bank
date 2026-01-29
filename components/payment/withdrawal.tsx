@@ -80,7 +80,7 @@ export function Withdrawal({
     }
   };
 
-  const handleDeleteAccount = async (itemId: string, e: React.MouseEvent) => {
+  const handleDeleteAccount = async (fundingSourceId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent account selection when clicking delete
     if (!confirm('Are you sure you want to disconnect this bank account?')) {
       return;
@@ -88,14 +88,14 @@ export function Withdrawal({
 
     setLoadingAccounts(true);
     try {
-      await PlaidService.disconnectItem(itemId);
+      await PlaidService.disconnectItem(accountId, fundingSourceId);
       // Reload accounts after deletion
       const accounts = await PlaidService.getConnectedAccounts(accountId);
       setConnectedAccounts(accounts);
       
       // Clear selection if deleted account was selected
       if (connectedAccounts.some((item) => 
-        item.itemId === itemId && item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
+        item.id === fundingSourceId && item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
       )) {
         setSelectedPlaidAccount(null);
       }
@@ -191,16 +191,16 @@ export function Withdrawal({
               item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
             ) || connectedAccounts[0];
 
-          request.item_id = selectedItem.itemId;
+          request.itemId = selectedItem.providerId;
           if (selectedPlaidAccount) {
-            request.plaid_account_id = selectedPlaidAccount;
+            request.accountId = selectedPlaidAccount;
           } else if (selectedItem.accounts.length > 0) {
-            request.plaid_account_id = selectedItem.accounts[0].accountId;
+            request.accountId = selectedItem.accounts[0].accountId;
           }
         } else if (publicToken) {
-          request.public_token = publicToken;
+          request.publicToken = publicToken;
           if (selectedPlaidAccount) {
-            request.plaid_account_id = selectedPlaidAccount;
+            request.accountId = selectedPlaidAccount;
           }
         }
 
@@ -335,7 +335,7 @@ export function Withdrawal({
                             </div>
                           </div>
                           <button
-                            onClick={(e) => handleDeleteAccount(item.itemId, e)}
+                            onClick={(e) => handleDeleteAccount(item.id, e)}
                             className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive/80 transition-colors"
                             title="Disconnect account"
                             disabled={loadingAccounts}

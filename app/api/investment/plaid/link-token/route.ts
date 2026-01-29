@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'account_id is required' }, { status: 400 });
     }
 
-    const response = await bluumApi.getPlaidLinkToken(accountId);
+    const { account_id, ...linkTokenPayload } = body;
+    const response = await bluumApi.getPlaidLinkToken(accountId, linkTokenPayload);
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(

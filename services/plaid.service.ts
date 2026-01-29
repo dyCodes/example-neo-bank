@@ -7,13 +7,13 @@ export interface PlaidLinkTokenResponse {
   };
 }
 
-export interface InitiateTransferRequest {
-  public_token?: string;
-  item_id?: string;
-  plaid_account_id?: string; // Plaid account ID (different from Bluum account_id)
+export interface CreateDepositRequest {
   amount: string;
   currency?: string;
   description?: string;
+  publicToken?: string;
+  itemId?: string;
+  accountId?: string; // Plaid account ID (different from Bluum account_id)
 }
 
 export interface InitiateWithdrawalRequest {
@@ -27,8 +27,7 @@ export interface InitiateWithdrawalRequest {
 
 export interface ConnectedAccount {
   id: string;
-  itemId: string;
-  institutionId: string;
+  providerId: string;
   institutionName: string;
   status: string;
   accounts: Array<{
@@ -44,7 +43,7 @@ export interface ConnectedAccount {
 }
 
 export interface ConnectedAccountsResponse {
-  items: ConnectedAccount[];
+  fundingSources: ConnectedAccount[];
 }
 
 export class PlaidService {
@@ -62,10 +61,18 @@ export class PlaidService {
   /**
    * Initiate a deposit transfer
    */
-  static async initiateTransfer(accountId: string, request: InitiateTransferRequest) {
-    const response = await apiClient.post('/api/investment/plaid/transfer', {
+  static async createDeposit(accountId: string, request: CreateDepositRequest) {
+    const response = await apiClient.post('/api/investment/deposits', {
       account_id: accountId,
-      ...request,
+      amount: request.amount,
+      currency: request.currency,
+      description: request.description,
+      method: 'ach_plaid',
+      plaidOptions: {
+        publicToken: request.publicToken,
+        itemId: request.itemId,
+        accountId: request.accountId,
+      },
     });
     return response.data;
   }
@@ -87,7 +94,7 @@ export class PlaidService {
   static async connectAccount(accountId: string, publicToken: string) {
     const response = await apiClient.post('/api/investment/plaid/connect', {
       account_id: accountId,
-      public_token: publicToken,
+      publicToken,
     });
     return response.data;
   }
@@ -97,19 +104,22 @@ export class PlaidService {
    */
   static async getConnectedAccounts(accountId: string): Promise<ConnectedAccount[]> {
     const response = await apiClient.get<{ data: ConnectedAccountsResponse }>(
-      `/api/investment/plaid/connected`,
-      { params: { account_id: accountId } }
+      `/api/investment/funding-sources`,
+      { params: { account_id: accountId, type: 'plaid' } }
     );
     console.log('getConnectedAccounts response', response.data);
-    return response.data.data.items;
+    return response.data.data.fundingSources;
   }
 
   /**
    * Disconnect a Plaid item
    */
-  static async disconnectItem(itemId: string) {
+  static async disconnectItem(accountId: string, fundingSourceId: string) {
     const response = await apiClient.delete('/api/investment/plaid/disconnect', {
-      params: { item_id: itemId },
+      params: { 
+        account_id: accountId,
+        funding_source_id: fundingSourceId 
+      },
     });
     return response.data;
   }

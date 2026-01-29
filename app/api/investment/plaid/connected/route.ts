@@ -10,8 +10,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'account_id is required' }, { status: 400 });
     }
 
-    const response = await bluumApi.getConnectedPlaidAccounts(accountId);
-    return NextResponse.json(response, { status: 200 });
+  const type = searchParams.get('type') || 'plaid';
+  const response = await bluumApi.getFundingSources(accountId, type === 'all' ? 'all' : 'plaid');
+  return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       {

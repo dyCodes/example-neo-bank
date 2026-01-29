@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const accountId = body.account_id;
-    
+
     if (!accountId) {
       return NextResponse.json({ error: 'account_id is required' }, { status: 400 });
     }
@@ -20,11 +20,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract fund request data (excluding account_id which goes in the URL)
-    const fundData: FundRequest = {
+    const fundData: FundRequest & { public_token?: string } = {
       amount: body.amount,
       funding_details: body.funding_details,
       description: body.description,
       external_reference_id: body.external_reference_id,
+      public_token: body.public_token,
     };
 
     const transaction = await bluumApi.fundAccount(accountId, fundData);

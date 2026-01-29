@@ -158,6 +158,7 @@ class BluumApiClient {
       };
       description?: string;
       external_reference_id?: string;
+      public_token?: string;
     }
   ) {
     const response = await this.client.post(`/wallet/accounts/${accountId}/funding`, fundData);
@@ -176,10 +177,10 @@ class BluumApiClient {
       offset?: number;
     }
   ) {
-    const response = await this.client.get(`/wallet/accounts/${accountId}/transactions`, {
+    const response = await this.client.get(`/accounts/${accountId}/transactions`, {
       params,
     });
-    return response.data;
+    return response.data.transactions;
   }
 
   async withdrawFunds(withdrawalData: {
@@ -201,62 +202,40 @@ class BluumApiClient {
     return response.data;
   }
 
+
   // Plaid Integration
-  async getPlaidLinkToken(accountId: string) {
-    const response = await this.client.post(`/plaid/accounts/${accountId}/link-token`, {});
+  async getPlaidLinkToken(accountId: string, body: Record<string, any> = {}) {
+    const response = await this.client.post(`/accounts/${accountId}/funding-sources/plaid/link-token`, body);
     return response.data;
   }
 
-  async initiatePlaidTransfer(
-    accountId: string,
-    transferData: {
-      public_token?: string;
-      item_id?: string;
-      account_id?: string;
-      amount: string;
-      currency?: string;
-      description?: string;
-    }
-  ) {
-    const response = await this.client.post(
-      `/plaid/accounts/${accountId}/initiate-transfer`,
-      transferData
-    );
+  async connectPlaidFundingSource(accountId: string, data: Record<string, any>) {
+    const response = await this.client.post(`/accounts/${accountId}/funding-sources/plaid/connect`, data);
     return response.data;
   }
 
-  async initiatePlaidWithdrawal(
-    accountId: string,
-    withdrawalData: {
-      public_token?: string;
-      item_id?: string;
-      account_id?: string;
-      amount: string;
-      currency?: string;
-      description?: string;
-    }
-  ) {
-    const response = await this.client.post(
-      `/plaid/accounts/${accountId}/initiate-withdrawal`,
-      withdrawalData
-    );
+  // Initiate Deposit (ACH, Plaid, etc)
+  async createDeposit(accountId: string, depositData: Record<string, any>) {
+    const response = await this.client.post(`/accounts/${accountId}/deposits`, depositData);
     return response.data;
   }
 
-  async connectPlaidAccount(accountId: string, publicToken: string) {
-    const response = await this.client.post(`/plaid/accounts/${accountId}/connect`, {
-      public_token: publicToken,
+  async getFundingSources(accountId: string, type: 'plaid' | 'all' = 'plaid') {
+    const response = await this.client.get(`/accounts/${accountId}/funding-sources`, {
+      params: { type },
     });
     return response.data;
   }
 
   async getConnectedPlaidAccounts(accountId: string) {
-    const response = await this.client.get(`/plaid/accounts/${accountId}/connected`);
-    return response.data;
+    return this.getFundingSources(accountId, 'plaid');
   }
 
-  async disconnectPlaidItem(itemId: string) {
-    const response = await this.client.delete(`/plaid/items/${itemId}`);
+  async disconnectPlaidItem(accountId: string, fundingSourceId: string) {
+    const response = await this.client.delete(
+      `/accounts/${accountId}/funding-sources/${fundingSourceId}`,
+      { params: { type: 'plaid' } }
+    );
     return response.data;
   }
 }

@@ -4,13 +4,18 @@ import { bluumApi } from '@/lib/bluum-api';
 export async function DELETE(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const itemId = searchParams.get('item_id');
+    const accountId = searchParams.get('account_id');
+    const fundingSourceId = searchParams.get('funding_source_id');
 
-    if (!itemId) {
-      return NextResponse.json({ error: 'item_id is required' }, { status: 400 });
+    if (!accountId) {
+      return NextResponse.json({ error: 'account_id is required' }, { status: 400 });
     }
 
-    const response = await bluumApi.disconnectPlaidItem(itemId);
+    if (!fundingSourceId) {
+      return NextResponse.json({ error: 'funding_source_id is required' }, { status: 400 });
+    }
+
+    const response = await bluumApi.disconnectPlaidItem(accountId, fundingSourceId);
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(

@@ -134,7 +134,7 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
     }
   };
 
-  const handleDeleteAccount = async (itemId: string, e: React.MouseEvent) => {
+  const handleDeleteAccount = async (fundingSourceId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent account selection when clicking delete
     if (!confirm('Are you sure you want to disconnect this bank account?')) {
       return;
@@ -142,7 +142,7 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
 
     setLoadingAccounts(true);
     try {
-      await PlaidService.disconnectItem(itemId);
+      await PlaidService.disconnectItem(accountId, fundingSourceId);
       // Reload accounts after deletion
       const accounts = await PlaidService.getConnectedAccounts(accountId);
       setConnectedAccounts(accounts);
@@ -151,7 +151,7 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
       if (
         connectedAccounts.some(
           (item) =>
-            item.itemId === itemId &&
+            item.id === fundingSourceId &&
             item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
         )
       ) {
@@ -276,20 +276,20 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
               item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
             ) || connectedAccounts[0];
 
-          request.item_id = selectedItem.itemId;
+          request.itemId = selectedItem.providerId;
           if (selectedPlaidAccount) {
-            request.plaid_account_id = selectedPlaidAccount;
+            request.accountId = selectedPlaidAccount;
           } else if (selectedItem.accounts.length > 0) {
-            request.plaid_account_id = selectedItem.accounts[0].accountId;
+            request.accountId = selectedItem.accounts[0].accountId;
           }
         } else if (publicToken) {
-          request.public_token = publicToken;
+          request.publicToken = publicToken;
           if (selectedPlaidAccount) {
-            request.plaid_account_id = selectedPlaidAccount;
+            request.accountId = selectedPlaidAccount;
           }
         }
 
-        const response = await PlaidService.initiateTransfer(accountId, request);
+        const response = await PlaidService.createDeposit(accountId, request);
         toast.success(
           'Deposit initiated successfully! Funds will be available once the transfer completes.'
         );
@@ -454,7 +454,7 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
                             </div>
                           </div>
                           <button
-                            onClick={(e) => handleDeleteAccount(item.itemId, e)}
+                            onClick={(e) => handleDeleteAccount(item.id, e)}
                             className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive/80 transition-colors"
                             title="Disconnect account"
                             disabled={loadingAccounts}
