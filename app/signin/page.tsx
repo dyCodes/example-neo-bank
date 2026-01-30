@@ -17,10 +17,8 @@ import { Label } from '@/components/ui/label';
 import {
   DEFAULT_EMAIL,
   INVESTOR_EMAIL,
-  INVESTOR_SELF_DIRECTED_EMAIL,
   DEMO_INVESTOR_ACCOUNT_ID,
   DEMO_INVESTOR_INVESTING_CHOICE,
-  DEMO_INVESTOR_SELF_DIRECTED_CHOICE,
 } from '@/lib/constants';
 import { setAuth } from '@/lib/auth';
 import { mockUserAccount } from '@/lib/mock-data';
@@ -54,8 +52,7 @@ export default function SignIn() {
     // Demo login: check if email matches default or investor email and password is at least 8 characters
     const isEmailValid =
       email === DEFAULT_EMAIL ||
-      email === INVESTOR_EMAIL ||
-      email === INVESTOR_SELF_DIRECTED_EMAIL;
+      email === INVESTOR_EMAIL;
     const isPasswordValid = password.length >= 8;
 
     if (isEmailValid && isPasswordValid) {
@@ -78,25 +75,6 @@ export default function SignIn() {
           // Investment account already set up
           externalAccountId: DEMO_INVESTOR_ACCOUNT_ID,
           investingChoice: DEMO_INVESTOR_INVESTING_CHOICE,
-        });
-      } else if (email === INVESTOR_SELF_DIRECTED_EMAIL) {
-        // Self-directed demo user
-        setAuth({
-          email: INVESTOR_SELF_DIRECTED_EMAIL,
-          name: mockUserAccount.name,
-          phoneNumber: mockUserAccount.phoneNumber,
-          streetAddress: mockUserAccount.streetAddress,
-          city: mockUserAccount.city,
-          state: mockUserAccount.state,
-          postalCode: mockUserAccount.postalCode,
-          country: mockUserAccount.country,
-          firstName: mockUserAccount.firstName,
-          lastName: mockUserAccount.lastName,
-          dateOfBirth: mockUserAccount.dateOfBirth,
-          countryOfBirth: mockUserAccount.countryOfBirth,
-          // Investment account already set up
-          externalAccountId: DEMO_INVESTOR_ACCOUNT_ID,
-          investingChoice: DEMO_INVESTOR_SELF_DIRECTED_CHOICE,
         });
       } else {
         // Regular demo user - generate a unique email to avoid email constraint violations

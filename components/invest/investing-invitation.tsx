@@ -22,7 +22,7 @@ export function InvestingInvitation({ onClick }: InvestingInvitationProps) {
               <div>
                 <h2 className="text-2xl font-bold" style={{ color: '#083423' }}>Start Investing</h2>
                 <p className="text-muted-foreground">
-                  Grow your wealth with stocks. Choose self-directed or AI-powered investing.
+                  Grow your wealth with stocks. AI-powered investing made simple.
                 </p>
               </div>
             </div>

@@ -21,12 +21,7 @@ import { BalanceCard } from '@/components/balance-card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { InvestOnboarding } from '@/components/invest/onboarding';
-import {
-  InvestingChoiceModal,
-  type InvestingChoice,
-} from '@/components/invest/investing-choice-modal';
 import { AIWealthLanding } from '@/components/invest/ai-wealth-landing';
-import { SelfDirectedLanding } from '@/components/invest/self-directed-landing';
 import { NetWorthChart } from '@/components/invest/net-worth-chart';
 import { PersonalizedInsights } from '@/components/invest/insights-cards';
 import { TrendingStocks } from '@/components/invest/trending-stocks';
@@ -36,7 +31,7 @@ import {
   getAuth,
   setExternalAccountId,
   clearExternalAccountId,
-  getInvestingChoice,
+  setInvestingChoice,
 } from '@/lib/auth';
 import { toast } from 'sonner';
 
@@ -64,9 +59,7 @@ export default function Invest() {
     totalGainPercent: 0,
   });
   const [hasAccountId, setHasAccountId] = useState<boolean>(false);
-  const [showChoiceModal, setShowChoiceModal] = useState<boolean>(false);
   const [showAIOnboarding, setShowAIOnboarding] = useState<boolean>(false);
-  const [showSelfDirectedOnboarding, setShowSelfDirectedOnboarding] = useState<boolean>(false);
 
   const loadPortfolio = async () => {
     try {
@@ -148,11 +141,10 @@ export default function Invest() {
       setHasAccountId(false);
       setLoading(false);
 
-      // Check if user has made a choice
-      const choice = getInvestingChoice();
-      if (!choice) {
-        // Show choice modal if no choice has been made
-        setShowChoiceModal(true);
+      // Set default to AI Wealth if no choice has been made
+      const user = getAuth();
+      if (!user?.investingChoice) {
+        setInvestingChoice('ai-wealth');
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -186,75 +178,21 @@ export default function Invest() {
     loadPortfolio();
   };
 
-  const handleChoiceSelect = (choice: InvestingChoice) => {
-    setShowChoiceModal(false);
-    // Choice is already stored by the modal component
-    // Proceed to onboarding (component will re-render and show onboarding)
-  };
-
-  const handleChoiceModalClose = (open: boolean) => {
-    if (!open) {
-      // If modal is being closed, check if user has made a choice
-      const choice = getInvestingChoice();
-      if (!choice) {
-        // No choice made, redirect back to dashboard
-        router.push('/dashboard');
-        return;
-      }
+  // Show AI Wealth Landing if no account
+  if (!hasAccountId) {
+    // If user clicked "Get Started", show onboarding directly
+    if (showAIOnboarding) {
+      return <InvestOnboarding onAccept={handleAccountCreated} />;
     }
-    setShowChoiceModal(open);
-  };
-
-  // Show choice modal if no choice has been made and no account
-  if (!hasAccountId && showChoiceModal) {
+    // Otherwise show the landing page
     return (
-      <InvestingChoiceModal
-        open={showChoiceModal}
-        onOpenChange={handleChoiceModalClose}
-        onSelect={handleChoiceSelect}
+      <AIWealthLanding
+        onStartOnboarding={() => setShowAIOnboarding(true)}
+        showOnboarding={false}
+        onAccountCreated={handleAccountCreated}
       />
     );
   }
-
-  // Show AI Wealth Landing or Self-Directed Onboarding based on choice
-  if (!hasAccountId) {
-    const user = getAuth();
-    const choice = user?.investingChoice || getInvestingChoice();
-
-    if (choice === 'ai-wealth') {
-      // If user clicked "Get Started", show onboarding directly
-      if (showAIOnboarding) {
-        return <InvestOnboarding onAccept={handleAccountCreated} />;
-      }
-      // Otherwise show the landing page
-      return (
-        <AIWealthLanding
-          onStartOnboarding={() => setShowAIOnboarding(true)}
-          showOnboarding={false}
-          onAccountCreated={handleAccountCreated}
-        />
-      );
-    } else {
-      // Self-directed flow
-      // If user clicked "Get Started", show onboarding directly
-      if (showSelfDirectedOnboarding) {
-        return <InvestOnboarding onAccept={handleAccountCreated} />;
-      }
-      // Otherwise show the landing page
-      return (
-        <SelfDirectedLanding
-          onStartOnboarding={() => setShowSelfDirectedOnboarding(true)}
-          showOnboarding={false}
-          onAccountCreated={handleAccountCreated}
-        />
-      );
-    }
-  }
-
-  // Get user's investing choice
-  const user = getAuth();
-  const investingChoice = user?.investingChoice || getInvestingChoice();
-  const isAIWealth = investingChoice === 'ai-wealth';
 
   // Get greeting based on time of day
   const getGreeting = () => {
@@ -371,22 +309,15 @@ export default function Invest() {
             </CardContent>
           </Card>
 
-          {isAIWealth && (
-            <>
-              {/* Net Worth Growth Chart */}
-              <NetWorthChart accountBalance={accountBalance} />
-            </>
-          )}
+          {/* Net Worth Growth Chart */}
+          <NetWorthChart accountBalance={accountBalance} />
 
           {/* Quick Actions */}
           <div>
             <h2 className="text-lg font-semibold mb-3" style={{ color: '#083423' }}>
               Quick Actions
             </h2>
-            <div
-              className={`grid gap-3 ${isAIWealth ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'
-                }`}
-            >
+            <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
               <Card
                 className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] border"
                 style={{ borderColor: '#edf9cd' }}
@@ -421,25 +352,23 @@ export default function Invest() {
                   </div>
                 </CardContent>
               </Card>
-              {isAIWealth && (
-                <Card
-                  className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] border"
-                  style={{ borderColor: '#edf9cd' }}
-                  onClick={handleChat}
-                >
-                  <CardContent className="py-0 px-4 flex flex-row items-center justify-center gap-3">
-                    <div className="rounded-full p-2" style={{ backgroundColor: '#edf9cd' }}>
-                      <MessageCircle className="h-5 w-5" style={{ color: '#083423' }} />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold text-sm" style={{ color: '#083423' }}>
-                        Chat with Bluum AI
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1">Get AI insights</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <Card
+                className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] border"
+                style={{ borderColor: '#edf9cd' }}
+                onClick={handleChat}
+              >
+                <CardContent className="py-0 px-4 flex flex-row items-center justify-center gap-3">
+                  <div className="rounded-full p-2" style={{ backgroundColor: '#edf9cd' }}>
+                    <MessageCircle className="h-5 w-5" style={{ color: '#083423' }} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-sm" style={{ color: '#083423' }}>
+                      Chat with Bluum AI
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">Get AI insights</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
@@ -792,15 +721,11 @@ export default function Invest() {
           </Card>
 
           {/* AI Features for AI Wealth Management */}
-          {isAIWealth && (
-            <>
-              {/* Personalized Insights */}
-              <PersonalizedInsights />
+          {/* Personalized Insights */}
+          <PersonalizedInsights />
 
-              {/* Trending Stocks */}
-              <TrendingStocks />
-            </>
-          )}
+          {/* Trending Stocks */}
+          <TrendingStocks />
         </>
       )}
 
@@ -962,14 +887,6 @@ export default function Invest() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-all">
-                <CardContent className="p-4">
-                  <h3 className="font-semibold mb-2">Self-Directed Trading</h3>
-                  <p className="text-sm text-gray-600">
-                    Take full control of your investments with advanced trading tools.
-                  </p>
-                </CardContent>
-              </Card>
             </div>
           </CardContent>
         </Card>
@@ -980,11 +897,9 @@ export default function Invest() {
           <CardContent className="p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Markets</h2>
             <p className="text-gray-600">View market data and explore investment opportunities.</p>
-            {isAIWealth && (
-              <div className="mt-6">
-                <TrendingStocks />
-              </div>
-            )}
+            <div className="mt-6">
+              <TrendingStocks />
+            </div>
           </CardContent>
         </Card>
       )}

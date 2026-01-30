@@ -13,14 +13,12 @@ import { mockUserAccount, getTransactions, type Transaction } from '@/lib/mock-d
 import { getInAppBalance } from '@/lib/auth';
 import { InvestingAnnouncementPopup } from '@/components/invest/announcement-popup';
 import { InvestingInvitation } from '@/components/invest/investing-invitation';
-import { InvestingChoiceModal, type InvestingChoice } from '@/components/invest/investing-choice-modal';
-import { getAuth } from '@/lib/auth';
+import { getAuth, setInvestingChoice } from '@/lib/auth';
 
 export default function Dashboard() {
   const router = useRouter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [hasInvestmentAccount, setHasInvestmentAccount] = useState(false);
 
   useEffect(() => {
@@ -42,7 +40,12 @@ export default function Dashboard() {
   }, []);
 
   const handleGetStarted = () => {
-    setShowChoiceModal(true);
+    // Set default to AI Wealth and navigate to invest page
+    const user = getAuth();
+    if (!user?.investingChoice) {
+      setInvestingChoice('ai-wealth');
+    }
+    router.push('/invest');
   };
 
   const handleInvestClick = (e: React.MouseEvent) => {
@@ -52,13 +55,12 @@ export default function Dashboard() {
       // User already has account, go directly to invest page
       router.push('/invest');
     } else {
-      // Show choice modal
-      setShowChoiceModal(true);
+      // Set default to AI Wealth and navigate to invest page
+      if (!user?.investingChoice) {
+        setInvestingChoice('ai-wealth');
+      }
+      router.push('/invest');
     }
-  };
-
-  const handleChoiceSelect = (choice: InvestingChoice) => {
-    router.push('/invest');
   };
 
   return (
@@ -67,13 +69,6 @@ export default function Dashboard() {
       {!hasInvestmentAccount && (
         <InvestingAnnouncementPopup onGetStarted={handleGetStarted} />
       )}
-
-      {/* Choice Modal */}
-      <InvestingChoiceModal
-        open={showChoiceModal}
-        onOpenChange={setShowChoiceModal}
-        onSelect={handleChoiceSelect}
-      />
 
       <div className="space-y-6">
         {/* Header */}
@@ -112,52 +107,52 @@ export default function Dashboard() {
             <TrendingUp className="h-5 w-5" style={{ color: '#083423' }} />
             <span className="text-sm">Invest</span>
           </Button>
-        <Button asChild variant="outline" className="h-auto flex-col gap-2 py-4">
-          <Link href="/savings">
-            <Plus className="h-5 w-5" />
-            <span className="text-sm">Save</span>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto flex-col gap-2 py-4">
-          <Link href="/cards">
-            <Receipt className="h-5 w-5" />
-            <span className="text-sm">Cards</span>
-          </Link>
-        </Button>
-      </div>
+          <Button asChild variant="outline" className="h-auto flex-col gap-2 py-4">
+            <Link href="/savings">
+              <Plus className="h-5 w-5" />
+              <span className="text-sm">Save</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-auto flex-col gap-2 py-4">
+            <Link href="/cards">
+              <Receipt className="h-5 w-5" />
+              <span className="text-sm">Cards</span>
+            </Link>
+          </Button>
+        </div>
 
-      {/* Recent Transactions */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Recent Transactions</CardTitle>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/transfers">View All</Link>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="py-8 text-center text-muted-foreground">
-              Loading transactions...
+        {/* Recent Transactions */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Recent Transactions</CardTitle>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/transfers">View All</Link>
+              </Button>
             </div>
-          ) : recentTransactions.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
-              No transactions yet
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {recentTransactions.map((transaction, index) => (
-                <div key={transaction.id}>
-                  <TransactionItem transaction={transaction} />
-                  {index < recentTransactions.length - 1 && <Separator />}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="py-8 text-center text-muted-foreground">
+                Loading transactions...
+              </div>
+            ) : recentTransactions.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground">
+                No transactions yet
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {recentTransactions.map((transaction, index) => (
+                  <div key={transaction.id}>
+                    <TransactionItem transaction={transaction} />
+                    {index < recentTransactions.length - 1 && <Separator />}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </>
   );
 }
