@@ -269,6 +269,34 @@ class BluumApiClient {
     const response = await this.client.post(`/accounts/${accountId}/deposits`, depositData);
     return response.data;
   }
+
+  // Plaid Withdrawal (Withdraw via Plaid)
+  async initiatePlaidWithdrawal(
+    accountId: string,
+    withdrawalData: {
+      public_token?: string;
+      item_id?: string;
+      account_id?: string; // Plaid account ID
+      amount: string;
+      currency?: string;
+      description?: string;
+    }
+  ) {
+    // Transform to the withdrawals API format expected by bluum-web-api
+    const data = {
+      amount: withdrawalData.amount,
+      currency: withdrawalData.currency || 'USD',
+      method: 'ach_plaid',
+      description: withdrawalData.description,
+      plaid_options: {
+        item_id: withdrawalData.item_id,
+        account_id: withdrawalData.account_id,
+      },
+    };
+
+    const response = await this.client.post(`/accounts/${accountId}/withdrawals`, data);
+    return response.data;
+  }
 }
 
 export const bluumApi = new BluumApiClient();
