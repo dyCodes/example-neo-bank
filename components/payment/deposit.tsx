@@ -2,24 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import {
-  CreditCard,
   Building2,
   ArrowRight,
   ArrowLeft,
   Loader2,
   X,
-  Lock,
   Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
-import { InvestmentService } from '@/services/investment.service';
 import { PlaidLink } from '@/components/plaid/plaid-link';
 import { PlaidService, type ConnectedAccount } from '@/services/plaid.service';
 import { toast } from 'sonner';
-import { getInAppBalance, setInAppBalance } from '@/lib/auth';
 
 interface DepositProps {
   accountId: string;
@@ -27,55 +23,20 @@ interface DepositProps {
   onCancel?: () => void;
 }
 
-type PaymentMethod = 'card' | 'plaid' | 'balance';
+type PaymentMethod = 'plaid';
 type Step = 1 | 2;
 
 export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
   const [step, setStep] = useState<Step>(1);
   const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('plaid');
   const [processing, setProcessing] = useState(false);
-
-  // Card payment fields
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [cardholderName, setCardholderName] = useState('');
 
   // Plaid fields
   const [publicToken, setPublicToken] = useState<string | null>(null);
   const [selectedPlaidAccount, setSelectedPlaidAccount] = useState<string | null>(null);
   const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>([]);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
-  const [inAppBalance, setInAppBalanceState] = useState<number>(0);
-
-  // Initialize in-app balance from localStorage or mock
-  useEffect(() => {
-    setInAppBalanceState(getInAppBalance());
-  }, []);
-
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
-
-  const formatExpiryDate = (value: string) => {
-    const v = value.replace(/\D/g, '');
-    if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
-    }
-    return v;
-  };
 
   // Load connected Plaid accounts
   useEffect(() => {
@@ -172,69 +133,16 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
       toast.error('Please enter a valid amount');
       return false;
     }
-    if (!paymentMethod) {
-      toast.error('Please select a payment method');
-      return false;
-    }
     return true;
   };
 
   const validateStep2 = () => {
-    if (paymentMethod === 'plaid') {
-      // For Plaid, we need either a public token (new connection) or a selected stored account
-      if (!publicToken && connectedAccounts.length === 0) {
-        toast.error('Please connect a bank account');
-        return false;
-      }
-      return true;
+    // For Plaid, we need either a public token (new connection) or a selected stored account
+    if (!publicToken && connectedAccounts.length === 0) {
+      toast.error('Please connect a bank account');
+      return false;
     }
-  if (paymentMethod === 'card') {
-      const cardNumberDigits = cardNumber.replace(/\s/g, '');
-      if (cardNumberDigits.length < 13 || cardNumberDigits.length > 19) {
-        toast.error('Please enter a valid card number');
-        return false;
-      }
-      if (!expiryDate || expiryDate.length !== 5) {
-        toast.error('Please enter a valid expiry date (MM/YY)');
-        return false;
-      }
-      const [month, year] = expiryDate.split('/');
-      const monthNum = parseInt(month, 10);
-      const yearNum = parseInt('20' + year, 10);
-      const currentDate = new Date();
-      const currentYear = currentDate.getFullYear();
-      const currentMonth = currentDate.getMonth() + 1;
-      if (monthNum < 1 || monthNum > 12) {
-        toast.error('Please enter a valid month');
-        return false;
-      }
-      if (yearNum < currentYear || (yearNum === currentYear && monthNum < currentMonth)) {
-        toast.error('Card has expired');
-        return false;
-      }
-      if (!cvv || cvv.length < 3) {
-        toast.error('Please enter a valid CVV');
-        return false;
-      }
-      if (!cardholderName || cardholderName.trim().length < 2) {
-        toast.error('Please enter the cardholder name');
-        return false;
-      }
-      return true;
-    }
-    if (paymentMethod === 'balance') {
-      const amt = parseFloat(amount || '0');
-      if (Number.isNaN(amt) || amt <= 0) {
-        toast.error('Please enter a valid amount');
-        return false;
-      }
-      if (amt > inAppBalance) {
-        toast.error('Insufficient in-app balance');
-        return false;
-      }
-      return true;
-    }
-    return false;
+    return true;
   };
 
   const handleNext = () => {
@@ -261,91 +169,38 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
       const amountStr = parseFloat(amount).toFixed(2);
 
       // Handle Plaid transfers
-      if (paymentMethod === 'plaid') {
-        const request: any = {
-          amount: amountStr,
-          currency: 'USD',
-          description: `Plaid ACH deposit of $${amountStr}`,
-        };
+      const request: any = {
+        amount: amountStr,
+        currency: 'USD',
+        description: `Plaid ACH deposit of $${amountStr}`,
+      };
 
-        // Use stored account if available, otherwise use new connection
-        if (connectedAccounts.length > 0 && !publicToken) {
-          // Find selected account or use first available
-          const selectedItem =
-            connectedAccounts.find((item) =>
-              item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
-            ) || connectedAccounts[0];
+      // Use stored account if available, otherwise use new connection
+      if (connectedAccounts.length > 0 && !publicToken) {
+        // Find selected account or use first available
+        const selectedItem =
+          connectedAccounts.find((item) =>
+            item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
+          ) || connectedAccounts[0];
 
-          request.itemId = selectedItem.providerId;
-          if (selectedPlaidAccount) {
-            request.accountId = selectedPlaidAccount;
-          } else if (selectedItem.accounts.length > 0) {
-            request.accountId = selectedItem.accounts[0].accountId;
-          }
-        } else if (publicToken) {
-          request.publicToken = publicToken;
-          if (selectedPlaidAccount) {
-            request.accountId = selectedPlaidAccount;
-          }
+        request.itemId = selectedItem.providerId;
+        if (selectedPlaidAccount) {
+          request.accountId = selectedPlaidAccount;
+        } else if (selectedItem.accounts.length > 0) {
+          request.accountId = selectedItem.accounts[0].accountId;
         }
-
-        const response = await PlaidService.createDeposit(accountId, request);
-        toast.success(
-          'Deposit initiated successfully! Funds will be available once the transfer completes.'
-        );
-        onSuccess?.();
-        return;
+      } else if (publicToken) {
+        request.publicToken = publicToken;
+        if (selectedPlaidAccount) {
+          request.accountId = selectedPlaidAccount;
+        }
       }
 
-      // Handle card payment
-      if (paymentMethod === 'card') {
-        const fundingDetails = {
-          funding_type: 'fiat' as const,
-          fiat_currency: 'USD' as const,
-          bank_account_id: `card_${cardNumber.replace(/\s/g, '').slice(-4)}`,
-          method: 'ach' as const, // Using ACH as the method, but in reality this would be 'card'
-        };
-
-        await InvestmentService.fundAccount({
-          account_id: accountId,
-          amount: amountStr,
-          funding_details: fundingDetails,
-          description: `Card deposit of $${amountStr}`,
-          external_reference_id: `card_${Date.now()}`,
-        });
-
-        toast.success('Deposit successful!');
-        onSuccess?.();
-        return;
-      }
-
-      // Handle in-app balance (frontend-only), still call fundAccount
-      if (paymentMethod === 'balance') {
-        const fundingDetails = {
-          funding_type: 'fiat' as const,
-          fiat_currency: 'USD' as const,
-          bank_account_id: 'in_app_balance',
-          method: 'ach' as const, // placeholder method to satisfy API typing
-        };
-
-        await InvestmentService.fundAccount({
-          account_id: accountId,
-          amount: amountStr,
-          funding_details: fundingDetails,
-          description: `In-app balance deposit of $${amountStr}`,
-          external_reference_id: `inapp_${Date.now()}`,
-        });
-
-        // Update In-app balance
-        const amt = parseFloat(amountStr);
-        const newBalance = Math.max(0, inAppBalance - (Number.isNaN(amt) ? 0 : amt));
-        setInAppBalance(newBalance);
-        setInAppBalanceState(newBalance);
-
-        toast.success('Deposit successful!');
-        onSuccess?.();
-        return;
-      }
+      const response = await PlaidService.createDeposit(accountId, request);
+      toast.success(
+        'Deposit initiated successfully! Funds will be available once the transfer completes.'
+      );
+      onSuccess?.();
     } catch (error: any) {
       // Error message is already extracted by apiClient interceptor
       const errorMessage = error.message || 'Failed to process deposit';
@@ -391,33 +246,15 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
             <Label htmlFor="paymentMethod">Payment Method</Label>
             <Select
               id="paymentMethod"
-              value={paymentMethod || ''}
+              value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
               disabled={processing}
             >
-              <option value="">Select payment method</option>
-              <option value="balance">In-app Account Balance</option>
-              <option value="plaid">Bank Transfer (ACH) via Plaid</option>
-              <option value="card">Card Payment - Instant deposit</option>
+              <option value="plaid">Bank Transfer (ACH)</option>
             </Select>
-            {paymentMethod === 'plaid' && (
-              <p className="text-xs text-muted-foreground">
-                Securely connect your bank account for ACH transfers
-              </p>
-            )}
-            {paymentMethod === 'card' && (
-              <p className="text-xs text-muted-foreground">
-                Instant deposit with credit or debit card
-              </p>
-            )}
-            {paymentMethod === 'balance' && (
-              <>
-                <div className="text-xs text-muted-foreground">
-                  Available balance: $
-                {inAppBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-              </>
-            )}
+            <p className="text-xs text-muted-foreground">
+              Securely connect your bank account for ACH transfers
+            </p>
           </div>
         </div>
       )}
@@ -425,171 +262,83 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
       {/* Step 2: Payment Details */}
       {step === 2 && (
         <div className="space-y-4">
-          {paymentMethod === 'plaid' ? (
-            <>
-              {loadingAccounts ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : connectedAccounts.length > 0 ? (
-                <div className="space-y-3">
-                  <Label>Select Bank Account</Label>
-                  {connectedAccounts.map((item) =>
-                    item.accounts.map((account) => (
-                      <div
-                        key={account.accountId}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedPlaidAccount === account.accountId
-                            ? 'border-primary bg-primary/5'
-                            : 'hover:bg-muted'
-                        }`}
-                        onClick={() => setSelectedPlaidAccount(account.accountId)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex-1">
-                            <div className="font-medium">{item.institutionName}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {account.accountName} •••• {account.mask}
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => handleDeleteAccount(item.id, e)}
-                            className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive/80 transition-colors"
-                            title="Disconnect account"
-                            disabled={loadingAccounts}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+          {loadingAccounts ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : connectedAccounts.length > 0 ? (
+            <div className="space-y-3">
+              <Label>Select Bank Account</Label>
+              {connectedAccounts.map((item) =>
+                item.accounts.map((account) => (
+                  <div
+                    key={account.accountId}
+                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedPlaidAccount === account.accountId
+                      ? 'border-primary bg-primary/5'
+                      : 'hover:bg-muted'
+                      }`}
+                    onClick={() => setSelectedPlaidAccount(account.accountId)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1">
+                        <div className="font-medium">{item.institutionName}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {account.accountName} •••• {account.mask}
                         </div>
                       </div>
-                    ))
-                  )}
-                  <div className="pt-2">
-                    <PlaidLink
-                      accountId={accountId}
-                      onSuccess={handlePlaidSuccess}
-                      onExit={(error) => {
-                        if (error) {
-                          toast.error('Failed to connect bank account');
-                        }
-                      }}
-                      className="w-full"
-                    >
-                      Connect Another Bank Account
-                    </PlaidLink>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {publicToken && connectedAccounts.length === 0 && (
-                    <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                      <p className="text-sm text-green-600 dark:text-green-400 font-medium">
-                        ✓ Bank account connected successfully
-                      </p>
-                      <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-1">
-                        You can proceed with this account or connect another one below.
-                      </p>
+                      <button
+                        onClick={(e) => handleDeleteAccount(item.id, e)}
+                        className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive/80 transition-colors"
+                        title="Disconnect account"
+                        disabled={loadingAccounts}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
-                  )}
-                  <Label>Connect Bank Account</Label>
-                  <PlaidLink
-                    accountId={accountId}
-                    onSuccess={handlePlaidSuccess}
-                    onExit={(error) => {
-                      if (error) {
-                        toast.error('Failed to connect bank account');
-                      }
-                    }}
-                    className="w-full"
-                  />
+                  </div>
+                ))
+              )}
+              <div className="pt-2">
+                <PlaidLink
+                  accountId={accountId}
+                  onSuccess={handlePlaidSuccess}
+                  onExit={(error) => {
+                    if (error) {
+                      toast.error('Failed to connect bank account');
+                    }
+                  }}
+                  className="w-full"
+                >
+                  Connect Another Bank Account
+                </PlaidLink>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {publicToken && connectedAccounts.length === 0 && (
+                <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                    ✓ Bank account connected successfully
+                  </p>
+                  <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-1">
+                    You can proceed with this account or connect another one below.
+                  </p>
                 </div>
               )}
-            </>
-          ) : paymentMethod === 'card' ? (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="cardNumber">Card Number</Label>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="cardNumber"
-                    type="text"
-                    placeholder="1234 5678 9012 3456"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                    disabled={processing}
-                    maxLength={19}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cardholderName">Cardholder Name</Label>
-                <Input
-                  id="cardholderName"
-                  type="text"
-                  placeholder="John Doe"
-                  value={cardholderName}
-                  onChange={(e) => setCardholderName(e.target.value)}
-                  disabled={processing}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="expiryDate">Expiry Date</Label>
-                  <Input
-                    id="expiryDate"
-                    type="text"
-                    placeholder="MM/YY"
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
-                    disabled={processing}
-                    maxLength={5}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cvv">CVV</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="cvv"
-                      type="text"
-                      placeholder="123"
-                      value={cvv}
-                      onChange={(e) =>
-                        setCvv(e.target.value.replace(/\D/g, '').substring(0, 4))
-                      }
-                      disabled={processing}
-                      maxLength={4}
-                      className="pl-9"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-md">
-                <Lock className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                <p className="text-xs text-muted-foreground">
-                  Your payment information is encrypted and secure. We never store your full
-                  card details.
-                </p>
-              </div>
-            </>
-          ) : paymentMethod === 'balance' ? (
-            <>
-              <div className="space-y-2">
-                <div className="p-3 border rounded-md bg-muted/50 text-sm">
-                <Label className='pb-2 font-semibold'>Confirm Deposit</Label>
-
-                 <p>This deposit will use your in-app account balance.</p>
-                </div>
-              </div>
-
-            </>
-          ) : null}
+              <Label>Connect Bank Account</Label>
+              <PlaidLink
+                accountId={accountId}
+                onSuccess={handlePlaidSuccess}
+                onExit={(error) => {
+                  if (error) {
+                    toast.error('Failed to connect bank account');
+                  }
+                }}
+                className="w-full"
+              />
+            </div>
+          )}
         </div>
       )}
 

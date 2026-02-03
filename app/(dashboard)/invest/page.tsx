@@ -2,29 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import {
-  ArrowDown,
-  ArrowUp,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  MessageCircle,
-  Link as LinkIcon,
-  FileText,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MessageCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { BalanceCard } from '@/components/balance-card';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { InvestOnboarding } from '@/components/invest/onboarding';
 import { AIWealthLanding } from '@/components/invest/ai-wealth-landing';
-import { NetWorthChart } from '@/components/invest/net-worth-chart';
-import { PersonalizedInsights } from '@/components/invest/insights-cards';
-import { TrendingStocks } from '@/components/invest/trending-stocks';
+import { HoldingsWidget } from '@/components/invest/holdings-widget';
+import { OverviewWidgets } from '@/components/invest/overview-widgets';
 import { InvestmentService, type Position } from '@/services/investment.service';
 import { AccountService } from '@/services/account.service';
 import {
@@ -34,24 +18,18 @@ import {
   setInvestingChoice,
 } from '@/lib/auth';
 import { toast } from 'sonner';
+import { PortfolioPerformanceChart } from '@/components/invest/portfolio-performance-chart';
+import { FinancialPlan } from '@/components/invest/financial-plan';
+import { AccountsWidget } from '@/components/invest/accounts-widget';
+import { InsightsWidget } from '@/components/invest/insights-widget';
+import { NetWorthWidget } from '@/components/invest/net-worth-widget';
+import { InvestmentPolicyWidget } from '@/components/invest/investment-policy-widget';
+import { WidgetService } from '@/services/widget.service';
 
 export default function Invest() {
   const router = useRouter();
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  const navTabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'accounts', label: 'Accounts' },
-    { id: 'flow', label: 'Flow' },
-    { id: 'transactions', label: 'Transactions' },
-    { id: 'services', label: 'Services' },
-    { id: 'markets', label: 'Markets' },
-  ];
-  const [activeTab, setActiveTab] = useState<string>('overview');
   const [positions, setPositions] = useState<Position[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [accountBalance, setAccountBalance] = useState<number>(0);
   const [portfolioGains, setPortfolioGains] = useState({
@@ -61,18 +39,24 @@ export default function Invest() {
   const [hasAccountId, setHasAccountId] = useState<boolean>(false);
   const [showAIOnboarding, setShowAIOnboarding] = useState<boolean>(false);
 
+  // Widget data from WidgetService
+  const [insights, setInsights] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [financialGoals, setFinancialGoals] = useState<any[]>([]);
+  const [investmentPolicy, setInvestmentPolicy] = useState<any>(null);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [quickActions, setQuickActions] = useState<any[]>([]);
+  const [widgetInsights, setWidgetInsights] = useState<any[]>([]);
+
   const loadPortfolio = async () => {
     try {
       setLoading(true);
-      setError(null);
 
       // Get account ID from user object
       const user = getAuth();
       const userAccountId = user?.externalAccountId;
 
       if (!userAccountId) {
-        // No account ID found - user needs to create one
-        setError('No investment account found. Please create an account first.');
         setLoading(false);
         return;
       }
@@ -92,7 +76,7 @@ export default function Invest() {
           return;
         }
 
-        setError('Error fetching account. Please try again later.');
+        toast.error('Error fetching account. Please try again later.');
         setLoading(false);
         return;
       }
@@ -100,20 +84,11 @@ export default function Invest() {
       const balanceValue = account?.balance ? parseFloat(account.balance) : 0;
       setAccountBalance(balanceValue);
 
-      // Fetch positions, orders, and transactions in parallel
-      const [positionsData, ordersData, transactionsData] = await Promise.all([
-        InvestmentService.getPositions(userAccountId),
-        InvestmentService.getOrders(userAccountId, { limit: 50 }),
-        InvestmentService.getTransactions(userAccountId, { limit: 50 }),
-      ]);
-
+      // Fetch positions
+      const positionsData = await InvestmentService.getPositions(userAccountId);
       setPositions(positionsData);
-      console.log('positionsData', positionsData);
 
-      setOrders(ordersData);
-      setTransactions(transactionsData);
-
-      // Calculate portfolio gains (for display in BalanceCard)
+      // Calculate portfolio gains
       const totals = InvestmentService.calculatePortfolioTotals(positionsData);
       setPortfolioGains({
         totalGain: totals.totalGain,
@@ -121,10 +96,42 @@ export default function Invest() {
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load portfolio';
-      setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Load widget data
+  const loadWidgetData = async (accountId?: string) => {
+    try {
+      const [
+        insightsData,
+        accountsData,
+        financialGoalsData,
+        investmentPolicyData,
+        recentActivitiesData,
+        quickActionsData,
+        widgetInsightsData,
+      ] = await Promise.all([
+        WidgetService.getInsights(accountId),
+        WidgetService.getAccounts(accountId),
+        WidgetService.getFinancialGoals(accountId),
+        WidgetService.getInvestmentPolicy(accountId),
+        WidgetService.getRecentActivities(accountId),
+        WidgetService.getQuickActions(accountId),
+        WidgetService.getWidgetInsights(accountId),
+      ]);
+
+      setInsights(insightsData);
+      setAccounts(accountsData);
+      setFinancialGoals(financialGoalsData);
+      setInvestmentPolicy(investmentPolicyData);
+      setRecentActivities(recentActivitiesData);
+      setQuickActions(quickActionsData);
+      setWidgetInsights(widgetInsightsData);
+    } catch (error) {
+      console.error('Failed to load widget data:', error);
     }
   };
 
@@ -132,6 +139,9 @@ export default function Invest() {
     // Check if user has externalAccountId
     const user = getAuth();
     const userAccountId = user?.externalAccountId;
+
+    // Load widget data (works with or without accountId)
+    loadWidgetData(userAccountId || undefined);
 
     if (userAccountId) {
       setHasAccountId(true);
@@ -160,22 +170,8 @@ export default function Invest() {
     toast.success('Welcome to investing!');
   };
 
-  const handleBuy = () => {
-    router.push('/invest/trade?side=buy');
-  };
-
-  const handleSell = () => {
-    router.push('/invest/trade?side=sell');
-  };
-
   const handleChat = () => {
-    // Navigate to chat page or open chat modal
-    // For now, we'll use a placeholder route
     router.push('/invest/chat');
-  };
-
-  const handleRetry = () => {
-    loadPortfolio();
   };
 
   // Show AI Wealth Landing if no account
@@ -194,14 +190,6 @@ export default function Invest() {
     );
   }
 
-  // Get greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
-
   // Get user's first name
   const getUserFirstName = () => {
     const user = getAuth();
@@ -212,697 +200,62 @@ export default function Invest() {
 
   return (
     <div className="space-y-6">
-      {/* Top Navigation Bar */}
-      <nav className="w-full border-b border-gray-100 bg-white mb-6">
-        <ul className="flex flex-row gap-2 md:gap-6 px-4 py-3 md:py-4 md:px-8 overflow-x-auto">
-          {navTabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <li key={tab.id}>
-                <button
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`text-base font-medium px-2 py-1 transition-colors duration-150 whitespace-nowrap pb-3 ${isActive
-                    ? 'text-gray-900 border-b-2 border-gray-900' // active
-                    : 'text-gray-500 hover:text-gray-900'
-                    }`}
-                  style={isActive ? { fontWeight: 700 } : { fontWeight: 400 }}
-                >
-                  {tab.label}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      <div className="text-2xl font-bold text-gray-900">
+        Welcome, {getUserFirstName()}
+      </div>
 
-      {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <>
-          {/* Main Content Area - Row 1: Greeting & Expert Consultation */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Greeting Card - Left (2/3 width) */}
-            <Card className="md:col-span-2 bg-white rounded-lg shadow-sm border-0">
-              <CardContent className="p-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                  {getGreeting()}, {getUserFirstName()}
-                </h1>
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    variant="outline"
-                    className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
-                  >
-                    <LinkIcon className="h-4 w-4 mr-2" />
-                    Link New Account
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Upload Document
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Chat with Bluum AI Card - Right (1/3 width) */}
-            <Card className="bg-gray-100 rounded-lg shadow-sm border-0">
-              <CardContent className="p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-2">Chat with Bluum AI</h2>
-                <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                  Get personalized investment insights, market analysis, and financial guidance from our AI assistant, from simple questions to complex decisions.
-                </p>
-                <Button
-                  onClick={handleChat}
-                  className="w-full bg-white text-gray-900 hover:bg-gray-50 border border-gray-300 shadow-sm rounded-md"
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Start Chat
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Content Area - Row 2: Financial Summary */}
-          <Card className="bg-white rounded-lg shadow-sm border-0">
-            <CardContent className="py-2 px-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-0 md:divide-x md:divide-gray-100">
-                <div className="md:pr-6">
-                  <p className="text-sm text-gray-600 mb-2">Total Net Worth</p>
-                  <p className="text-3xl font-medium text-gray-900">
-                    ${accountBalance.toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </p>
-                </div>
-                <div className="md:pl-6">
-                  <p className="text-sm text-gray-600 mb-2">Cash & Equivalents</p>
-                  <p className="text-3xl font-medium text-gray-900">
-                    ${accountBalance.toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Net Worth Growth Chart */}
-          <NetWorthChart accountBalance={accountBalance} />
-
-          {/* Quick Actions */}
-          <div>
-            <h2 className="text-lg font-semibold mb-3" style={{ color: '#083423' }}>
-              Quick Actions
-            </h2>
-            <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
-              <Card
-                className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] border"
-                style={{ borderColor: '#edf9cd' }}
-                onClick={handleBuy}
-              >
-                <CardContent className="py-0 px-4 flex flex-row items-center justify-center gap-3">
-                  <div className="rounded-full p-2" style={{ backgroundColor: '#083423' }}>
-                    <TrendingUp className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold text-sm" style={{ color: '#083423' }}>
-                      Buy
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">Purchase stocks</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card
-                className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] border"
-                style={{ borderColor: '#edf9cd' }}
-                onClick={handleSell}
-              >
-                <CardContent className="py-0 px-4 flex flex-row items-center justify-center gap-3">
-                  <div className="rounded-full p-2" style={{ backgroundColor: '#edf9cd' }}>
-                    <TrendingUp className="h-5 w-5 rotate-180" style={{ color: '#083423' }} />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold text-sm" style={{ color: '#083423' }}>
-                      Sell
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">Sell positions</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card
-                className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] border"
-                style={{ borderColor: '#edf9cd' }}
-                onClick={handleChat}
-              >
-                <CardContent className="py-0 px-4 flex flex-row items-center justify-center gap-3">
-                  <div className="rounded-full p-2" style={{ backgroundColor: '#edf9cd' }}>
-                    <MessageCircle className="h-5 w-5" style={{ color: '#083423' }} />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold text-sm" style={{ color: '#083423' }}>
-                      Chat with Bluum AI
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1">Get AI insights</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Positions, Orders, and Transactions Tabs */}
-          <Card>
-            <CardContent>
-              {loading ? (
-                <div className="py-8 text-center text-muted-foreground">Loading portfolio...</div>
-              ) : error ? (
-                <div className="py-8 text-center">
-                  <p className="text-muted-foreground mb-4">{error}</p>
-                  <Button onClick={handleRetry} variant="outline" size="sm">
-                    Retry
-                  </Button>
-                </div>
-              ) : (
-                <Tabs defaultValue="positions" className="w-full">
-                  <TabsList
-                    className="grid w-full grid-cols-3"
-                    style={{ backgroundColor: '#edf9cd' }}
-                  >
-                    <TabsTrigger
-                      value="positions"
-                      className="hover:bg-[#083423]/10 [&.bg-background]:bg-[#083423]/20 [&.bg-background]:text-[#083423]"
-                      style={{ color: '#083423' }}
-                    >
-                      Positions
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="orders"
-                      className="hover:bg-[#083423]/10 [&.bg-background]:bg-[#083423]/20 [&.bg-background]:text-[#083423]"
-                      style={{ color: '#083423' }}
-                    >
-                      Orders
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="transactions"
-                      className="hover:bg-[#083423]/10 [&.bg-background]:bg-[#083423]/20 [&.bg-background]:text-[#083423]"
-                      style={{ color: '#083423' }}
-                    >
-                      Transactions
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/* Positions Tab */}
-                  <TabsContent value="positions" className="mt-4">
-                    {positions.length === 0 ? (
-                      <div className="py-8 text-center text-muted-foreground">
-                        No positions yet. Start investing!
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {positions.map((position, index) => (
-                          <div key={position.symbol}>
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Link
-                                    href={`/invest/assets/${position.symbol}`}
-                                    className="font-semibold hover:underline cursor-pointer"
-                                    style={{ color: '#083423' }}
-                                  >
-                                    {position.symbol}
-                                  </Link>
-                                </div>
-                                <div className="flex items-center gap-4 mt-2">
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Current Price</p>
-                                    <p className="text-sm font-medium">
-                                      $
-                                      {position.currentPrice != null
-                                        ? position.currentPrice.toFixed(2)
-                                        : 'N/A'}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Value</p>
-                                    <p className="text-sm font-medium">
-                                      ${position.value != null ? position.value.toFixed(2) : 'N/A'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                              {position.gain != null && (
-                                <div className="text-right">
-                                  <div className="flex items-center gap-1 mb-1">
-                                    {position.gain >= 0 ? (
-                                      <ArrowUp className="h-4 w-4 text-green-600" />
-                                    ) : (
-                                      <ArrowDown className="h-4 w-4 text-red-600" />
-                                    )}
-                                    <span
-                                      className={`text-sm font-semibold ${position.gain >= 0 ? 'text-green-600' : 'text-red-600'
-                                        }`}
-                                    >
-                                      {position.gain >= 0 ? '+' : ''}$
-                                      {position.gain != null ? position.gain.toFixed(2) : 'N/A'}
-                                    </span>
-                                  </div>
-                                  <p
-                                    className={`text-xs ${position.gainPercent >= 0 ? 'text-green-600' : 'text-red-600'
-                                      }`}
-                                  >
-                                    {position.gainPercent >= 0 ? '+' : ''}
-                                    {position.gainPercent != null
-                                      ? position.gainPercent.toFixed(2)
-                                      : 'N/A'}
-                                    %
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                            {index < positions.length - 1 && <Separator className="mt-4" />}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  {/* Orders Tab */}
-                  <TabsContent value="orders" className="mt-4">
-                    {orders.length === 0 ? (
-                      <div className="py-8 text-center text-muted-foreground">
-                        No orders yet. Place your first order!
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {orders.map((order, index) => {
-                          const getStatusIcon = () => {
-                            switch (order.status) {
-                              case 'filled':
-                                return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-                              case 'canceled':
-                              case 'rejected':
-                                return <XCircle className="h-4 w-4 text-red-600" />;
-                              default:
-                                return <Clock className="h-4 w-4 text-yellow-600" />;
-                            }
-                          };
-
-                          const getStatusColor = () => {
-                            switch (order.status) {
-                              case 'filled':
-                                return 'text-green-600';
-                              case 'canceled':
-                              case 'rejected':
-                                return 'text-red-600';
-                              default:
-                                return 'text-yellow-600';
-                            }
-                          };
-
-                          return (
-                            <div key={order.id || index}>
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Link
-                                      href={`/invest/assets/${order.symbol}`}
-                                      className="font-semibold hover:underline cursor-pointer"
-                                      style={{ color: '#083423' }}
-                                    >
-                                      {order.symbol}
-                                    </Link>
-                                    <Badge
-                                      variant={order.side === 'buy' ? 'default' : 'secondary'}
-                                      className="text-xs"
-                                    >
-                                      {order.side.toUpperCase()}
-                                    </Badge>
-                                    <Badge variant="outline" className="text-xs">
-                                      {order.type}
-                                    </Badge>
-                                  </div>
-                                  <div className="flex items-center gap-4 mt-2">
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Quantity</p>
-                                      <p className="text-sm font-medium">
-                                        {order.qty || order.filled_qty || 'N/A'}
-                                      </p>
-                                    </div>
-                                    {order.average_price && (
-                                      <div>
-                                        <p className="text-xs text-muted-foreground">Avg Price</p>
-                                        <p className="text-sm font-medium">
-                                          $
-                                          {order.average_price != null &&
-                                            !isNaN(parseFloat(order.average_price))
-                                            ? parseFloat(order.average_price).toFixed(2)
-                                            : 'N/A'}
-                                        </p>
-                                      </div>
-                                    )}
-                                    {order.limit_price && (
-                                      <div>
-                                        <p className="text-xs text-muted-foreground">
-                                          Limit Price
-                                        </p>
-                                        <p className="text-sm font-medium">
-                                          $
-                                          {order.limit_price != null &&
-                                            !isNaN(parseFloat(order.limit_price))
-                                            ? parseFloat(order.limit_price).toFixed(2)
-                                            : 'N/A'}
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-                                  {order.submitted_at && (
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                      {new Date(order.submitted_at).toLocaleString()}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="text-right">
-                                  <div className="flex items-center gap-1 mb-1">
-                                    {getStatusIcon()}
-                                    <span className={`text-sm font-semibold ${getStatusColor()}`}>
-                                      {order.status.replace('_', ' ').toUpperCase()}
-                                    </span>
-                                  </div>
-                                  {order.filled_qty && order.qty && (
-                                    <p className="text-xs text-muted-foreground">
-                                      {order.filled_qty} / {order.qty} filled
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                              {index < orders.length - 1 && <Separator className="mt-4" />}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  {/* Transactions Tab */}
-                  <TabsContent value="transactions" className="mt-4">
-                    {transactions.length === 0 ? (
-                      <div className="py-8 text-center text-muted-foreground">
-                        No transactions yet.
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {transactions.map((transaction, index) => {
-                          const isDeposit = transaction.type === 'deposit';
-                          return (
-                            <div key={transaction.id || transaction.transaction_id || index}>
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-semibold">
-                                      {isDeposit ? 'Deposit' : 'Withdrawal'}
-                                    </h3>
-                                    <Badge
-                                      variant={isDeposit ? 'default' : 'secondary'}
-                                      className="text-xs"
-                                    >
-                                      {transaction.type.toUpperCase()}
-                                    </Badge>
-                                    <Badge
-                                      variant={
-                                        transaction.status === 'settled' ||
-                                          transaction.status === 'completed'
-                                          ? 'success'
-                                          : transaction.status === 'failed' ||
-                                            transaction.status === 'canceled'
-                                            ? 'destructive'
-                                            : transaction.status === 'pending' ||
-                                              transaction.status === 'processing'
-                                              ? 'warning'
-                                              : 'secondary'
-                                      }
-                                      className="text-xs capitalize"
-                                    >
-                                      {transaction.status}
-                                    </Badge>
-                                  </div>
-                                  <div className="flex items-center gap-4 mt-2">
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Amount</p>
-                                      <p className="text-sm font-medium">
-                                        $
-                                        {transaction.amount != null &&
-                                          !isNaN(parseFloat(transaction.amount))
-                                          ? parseFloat(transaction.amount).toFixed(2)
-                                          : '0.00'}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Currency</p>
-                                      <p className="text-sm font-medium">
-                                        {transaction.currency || 'USD'}
-                                      </p>
-                                    </div>
-                                    {transaction.fee && parseFloat(transaction.fee) > 0 && (
-                                      <div>
-                                        <p className="text-xs text-muted-foreground">Fee</p>
-                                        <p className="text-sm font-medium">
-                                          $
-                                          {transaction.fee != null &&
-                                            !isNaN(parseFloat(transaction.fee))
-                                            ? parseFloat(transaction.fee).toFixed(2)
-                                            : 'N/A'}
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-                                  {transaction.description && (
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                      {transaction.description}
-                                    </p>
-                                  )}
-                                  {transaction.created_at && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {new Date(transaction.created_at).toLocaleString()}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="text-right">
-                                  <div className="flex items-center gap-1 mb-1">
-                                    {isDeposit ? (
-                                      <ArrowDown className="h-4 w-4 text-green-600" />
-                                    ) : (
-                                      <ArrowUp className="h-4 w-4 text-red-600" />
-                                    )}
-                                    <span
-                                      className={`text-sm font-semibold ${isDeposit ? 'text-green-600' : 'text-red-600'
-                                        }`}
-                                    >
-                                      {isDeposit ? '+' : '-'}$
-                                      {transaction.amount != null &&
-                                        !isNaN(parseFloat(transaction.amount))
-                                        ? parseFloat(transaction.amount).toFixed(2)
-                                        : '0.00'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              {index < transactions.length - 1 && <Separator className="mt-4" />}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* AI Features for AI Wealth Management */}
-          {/* Personalized Insights */}
-          <PersonalizedInsights />
-
-          {/* Trending Stocks */}
-          <TrendingStocks />
-        </>
-      )}
-
-      {activeTab === 'accounts' && (
-        <>
-          {/* Investment Balance Card */}
-          <BalanceCard
-            balance={accountBalance}
-            label="Investment Balance"
-            portfolioValue={{
-              totalGain: portfolioGains.totalGain,
-              totalGainPercent: portfolioGains.totalGainPercent,
-            }}
-            accountId={accountId || undefined}
-            onSuccess={loadPortfolio}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        {/* Left (2/3 width) */}
+        <div className="col-span-2">
+          <InsightsWidget
+            insights={insights}
+            positions={positions}
+            portfolioGains={portfolioGains}
+            accountBalance={accountBalance}
           />
-        </>
-      )}
+        </div>
 
-      {activeTab === 'flow' && (
-        <Card>
+        {/* Chat with Bluum AI Card - Right (1/3 width) */}
+        <Card className="rounded-lg border border-gray-200 shadow-none h-full">
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Flow</h2>
-            <p className="text-gray-600">View your cash flow and funding history.</p>
-            {transactions.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {transactions.slice(0, 5).map((transaction, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-sm">{transaction.type}</span>
-                    <span className="text-sm font-medium">
-                      ${transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Chat with your personal AI</h2>
+            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+              Track and manage your portfolio with real-time insights and ease.
+            </p>
+            <Button
+              onClick={handleChat}
+              className="w-full bg-white text-gray-900 hover:bg-gray-50 border border-gray-300 shadow-sm rounded-md"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Start Chat
+            </Button>
           </CardContent>
         </Card>
-      )}
+      </div>
 
-      {activeTab === 'transactions' && (
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Transactions</h2>
-            {loading ? (
-              <div className="py-8 text-center text-muted-foreground">Loading transactions...</div>
-            ) : error ? (
-              <div className="py-8 text-center">
-                <p className="text-muted-foreground mb-4">{error}</p>
-                <Button onClick={handleRetry} variant="outline" size="sm">
-                  Retry
-                </Button>
-              </div>
-            ) : transactions.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">
-                No transactions yet.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {transactions.map((transaction, index) => {
-                  const isDeposit = transaction.type === 'deposit';
-                  return (
-                    <div key={transaction.id || transaction.transaction_id || index}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold">
-                              {isDeposit ? 'Deposit' : 'Withdrawal'}
-                            </h3>
-                            <Badge
-                              variant={isDeposit ? 'default' : 'secondary'}
-                              className="text-xs"
-                            >
-                              {transaction.type.toUpperCase()}
-                            </Badge>
-                            <Badge
-                              variant={
-                                transaction.status === 'settled' ||
-                                  transaction.status === 'completed'
-                                  ? 'success'
-                                  : transaction.status === 'failed' ||
-                                    transaction.status === 'canceled'
-                                    ? 'destructive'
-                                    : transaction.status === 'pending' ||
-                                      transaction.status === 'processing'
-                                      ? 'warning'
-                                      : 'secondary'
-                              }
-                              className="text-xs capitalize"
-                            >
-                              {transaction.status}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 mt-2">
-                            <div>
-                              <p className="text-xs text-muted-foreground">Amount</p>
-                              <p className="text-sm font-medium">
-                                $
-                                {transaction.amount != null &&
-                                  !isNaN(parseFloat(transaction.amount))
-                                  ? parseFloat(transaction.amount).toFixed(2)
-                                  : '0.00'}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Currency</p>
-                              <p className="text-sm font-medium">
-                                {transaction.currency || 'USD'}
-                              </p>
-                            </div>
-                          </div>
-                          {transaction.created_at && (
-                            <p className="text-xs text-muted-foreground mt-2">
-                              {new Date(transaction.created_at).toLocaleString()}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <div className="flex items-center gap-1 mb-1">
-                            {isDeposit ? (
-                              <ArrowDown className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <ArrowUp className="h-4 w-4 text-red-600" />
-                            )}
-                            <span
-                              className={`text-sm font-semibold ${isDeposit ? 'text-green-600' : 'text-red-600'
-                                }`}
-                            >
-                              {isDeposit ? '+' : '-'}$
-                              {transaction.amount != null &&
-                                !isNaN(parseFloat(transaction.amount))
-                                ? parseFloat(transaction.amount).toFixed(2)
-                                : '0.00'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {index < transactions.length - 1 && <Separator className="mt-4" />}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {/* Net Worth Widget */}
+      <NetWorthWidget accountBalance={accountBalance} positions={positions} />
 
-      {activeTab === 'services' && (
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Services</h2>
-            <p className="text-gray-600">Explore additional investment services and features.</p>
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="cursor-pointer hover:shadow-md transition-all">
-                <CardContent className="p-4">
-                  <h3 className="font-semibold mb-2">AI Wealth Management</h3>
-                  <p className="text-sm text-gray-600">
-                    Get AI-powered investment recommendations and portfolio management.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PortfolioPerformanceChart />
+        <AccountsWidget accounts={accounts} />
+      </div>
 
-      {activeTab === 'markets' && (
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Markets</h2>
-            <p className="text-gray-600">View market data and explore investment opportunities.</p>
-            <div className="mt-6">
-              <TrendingStocks />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Financial plan widget */}
+      <FinancialPlan goals={financialGoals} />
+
+      {/* Investment Policy Widget */}
+      <InvestmentPolicyWidget policy={investmentPolicy} />
+
+      {/* Holdings Widget */}
+      <HoldingsWidget />
+
+      {/* Portfolio Overview Widgets */}
+      <OverviewWidgets
+        recentActivities={recentActivities}
+        quickActions={quickActions}
+        insights={widgetInsights}
+      />
     </div>
   );
 }
