@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Send, Bot, User, Sparkles, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ interface Message {
 
 export default function ChatPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +32,48 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleSendProgrammatically = async (messageText: string) => {
+    if (!messageText.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: messageText.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    // Simulate AI response (replace with actual API call)
+    setTimeout(() => {
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: generateAIResponse(userMessage.content),
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  // Handle initial message from query parameter
+  useEffect(() => {
+    const messageParam = searchParams.get('message');
+    if (messageParam && messages.length === 0 && !isLoading) {
+      const decodedMessage = decodeURIComponent(messageParam);
+      setInput(decodedMessage);
+      // Auto-send the message after a short delay
+      const timer = setTimeout(() => {
+        handleSendProgrammatically(decodedMessage);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const formatMessage = (text: string) => {
     // Split by lines to handle line breaks

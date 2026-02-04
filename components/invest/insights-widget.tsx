@@ -1,10 +1,12 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
-import { type Insight } from '@/services/widget.service';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
+import { type WidgetInsight } from '@/services/widget.service';
+import { Clock } from 'lucide-react';
 
 interface InsightsWidgetProps {
-  insights?: Insight[];
+  insights?: WidgetInsight[];
   // Props kept for future use when connecting to real data
   positions?: any[];
   portfolioGains?: {
@@ -14,93 +16,181 @@ interface InsightsWidgetProps {
   accountBalance?: number;
 }
 
+// Custom icon components matching the design
+const ChartIcon = () => (
+  <div className="w-3.5 h-3.5 relative">
+    <div
+      className="absolute left-[1.17px] top-[1.17px] w-[11.67px] h-[11.67px]"
+      style={{
+        outline: '1.17px #5856D6 solid',
+        outlineOffset: '-0.58px',
+      }}
+    />
+    <div
+      className="absolute left-[5.30px] top-[4.08px] w-[3.40px] h-[3.50px]"
+      style={{
+        outline: '1.17px #5856D6 solid',
+        outlineOffset: '-0.58px',
+      }}
+    />
+  </div>
+);
+
+const ChartIcon2 = () => (
+  <div className="w-3.5 h-3.5 relative">
+    <div
+      className="absolute left-[1.17px] top-[1.16px] w-[11.67px] h-[11.67px]"
+      style={{
+        outline: '1.17px #5856D6 solid',
+        outlineOffset: '-0.58px',
+      }}
+    />
+    <div
+      className="absolute left-[5.25px] top-[2.33px] w-[7.58px] h-[5.84px]"
+      style={{
+        outline: '1.17px #5856D6 solid',
+        outlineOffset: '-0.58px',
+      }}
+    />
+  </div>
+);
+
+const ChartIcon3 = () => (
+  <div className="w-3.5 h-3.5 relative">
+    <div
+      className="absolute left-[1.17px] top-[1.17px] w-[11.67px] h-[11.67px]"
+      style={{
+        outline: '1.17px #5856D6 solid',
+        outlineOffset: '-0.58px',
+      }}
+    />
+  </div>
+);
+
+const getIconComponent = (index: number) => {
+  const icons = [ChartIcon, ChartIcon2, ChartIcon3];
+  return icons[index % icons.length];
+};
+
 export function InsightsWidget({
   insights = [],
   positions,
   portfolioGains,
   accountBalance,
 }: InsightsWidgetProps) {
+  const router = useRouter();
+
+  const handleActionClick = (link?: string) => {
+    if (link) {
+      router.push(link);
+    }
+  };
 
   return (
-    <div
-      className="w-full h-full p-4 rounded-xl overflow-hidden bg-white border border-gray-200"
-      style={{
-        borderRadius: 12,
-      }}
-    >
-      {/* Header */}
-      <div className="flex justify-between items-center" style={{ marginBottom: 12 }}>
-        <div
-          className="text-base font-semibold"
-          style={{ color: '#1F2937', fontSize: 16, fontFamily: 'Inter', fontWeight: 600 }}
-        >
-          Your Insights
-        </div>
-        <ChevronDown className="w-[18px] h-[18px] text-gray-600" />
-      </div>
-
-      {/* Insights Pills */}
-      <div className="flex flex-wrap" style={{ gap: 8 }}>
-        {insights.map((insight) => (
+    <Card className="w-full h-full">
+      <CardContent className="">
+        <div className="w-full h-full flex flex-col gap-4">
+          {/* Title */}
           <div
-            key={insight.id}
-            className="px-2 py-1 rounded-[20px] flex items-center flex-wrap"
+            className="flex items-center mb-2"
             style={{
-              gap: 4,
-              background:
-                insight.type === 'success'
-                  ? 'linear-gradient(0deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%)'
-                  : 'linear-gradient(0deg, rgba(239, 68, 68, 0.10) 0%, rgba(239, 68, 68, 0.10) 100%)',
-              borderRadius: 20,
+              color: '#6B7280',
+              fontSize: 18,
+              fontFamily: 'Inter',
+              fontWeight: 500,
             }}
           >
-            <span
-              className="text-xs font-normal"
-              style={{
-                color: '#374151',
-                fontSize: 12,
-                fontFamily: 'Inter',
-                fontWeight: 400,
-              }}
-            >
-              {insight.text}
-            </span>
-            <div
-              className="px-1 rounded-2xl flex items-center justify-center"
-              style={{
-                background:
-                  insight.type === 'success'
-                    ? 'rgba(34, 197, 94, 0.15)'
-                    : 'rgba(239, 68, 68, 0.15)',
-                borderRadius: 16,
-              }}
-            >
-              <span
-                className="text-xs font-medium text-center leading-[18px]"
-                style={{
-                  color: insight.type === 'success' ? '#22C55E' : '#EF4444',
-                  fontSize: 12,
-                  fontFamily: 'Inter',
-                  fontWeight: 500,
-                }}
-              >
-                {insight.value}
-              </span>
-            </div>
-            <span
-              className="text-xs font-normal"
-              style={{
-                color: '#374151',
-                fontSize: 12,
-                fontFamily: 'Inter',
-                fontWeight: 400,
-              }}
-            >
-              {insight.description}
-            </span>
+            Your Insights
           </div>
-        ))}
-      </div>
-    </div>
+
+          {/* Insights List */}
+          <div className="flex flex-col gap-0">
+            {insights.map((insight, index) => {
+              const IconComponent = getIconComponent(index);
+              const showDivider = index < insights.length - 1;
+
+              return (
+                <div key={insight.id} className="flex flex-col gap-0">
+                  {/* Insight Card */}
+                  <div className="rounded-[10px] flex flex-col gap-2">
+                    {/* Header with Icon and Title */}
+                    <div className="flex items-center gap-2">
+                      {/* Icon Container */}
+                      <div
+                        className="w-7 h-7 relative flex items-center justify-center shrink-0"
+                        style={{
+                          background: 'rgba(88, 86, 214, 0.10)',
+                          borderRadius: 6,
+                        }}
+                      >
+                        <Clock className="h-4 w-4" />
+                      </div>
+                      {/* Title */}
+                      <div
+                        className="flex items-center text-sm"
+                        style={{
+                          color: '#374151',
+                          fontFamily: 'Inter',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {insight.title}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div
+                      style={{
+                        color: '#6B7280',
+                        fontSize: 13,
+                        fontFamily: 'Inter',
+                        fontWeight: 400,
+                        lineHeight: '19.50px',
+                      }}
+                    >
+                      {insight.description.split('<br/>').map((line, lineIndex, array) => (
+                        <span key={lineIndex}>
+                          {line}
+                          {lineIndex < array.length - 1 && <br />}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Action Link */}
+                    {insight.actionLabel && insight.actionLink && (
+                      <div className="h-[19.50px] relative mt-1">
+                        <button
+                          onClick={() => handleActionClick(insight.actionLink)}
+                          className="h-4 flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                          style={{
+                            color: '#2563EB',
+                            fontSize: 13,
+                            fontFamily: 'Inter',
+                            fontWeight: 500,
+                            lineHeight: '19.50px',
+                          }}
+                        >
+                          {insight.actionLabel} →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  {showDivider && (
+                    <div
+                      className="w-full h-px my-4"
+                      style={{
+                        background: '#E5E7EB',
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

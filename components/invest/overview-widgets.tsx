@@ -1,54 +1,32 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowUp,
-  ArrowDown,
-  Settings,
   Clock,
   CheckCircle2,
   AlertCircle,
-  ChevronRight,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAuth } from '@/lib/auth';
-import { type RecentActivity, type QuickAction, type WidgetInsight } from '@/services/widget.service';
+import { type RecentActivity, type WidgetInsight } from '@/services/widget.service';
 
 interface OverviewWidgetsProps {
   recentActivities?: RecentActivity[];
-  quickActions?: QuickAction[];
   insights?: WidgetInsight[];
 }
 
 export function OverviewWidgets({
   recentActivities = [],
-  quickActions = [],
   insights = [],
 }: OverviewWidgetsProps) {
-  const router = useRouter();
   const user = getAuth();
   const accountId = user?.externalAccountId;
-
-  // Convert quick actions from service format to component format
-  const iconMap: Record<string, React.ReactNode> = {
-    'arrow-up': <ArrowUp className="h-5 w-5" />,
-    'arrow-down': <ArrowDown className="h-5 w-5" />,
-    settings: <Settings className="h-5 w-5" />,
-    clock: <Clock className="h-5 w-5" />,
-  };
 
   const insightIconMap: Record<string, React.ReactNode> = {
     clock: <Clock className="h-5 w-5" />,
     'check-circle': <CheckCircle2 className="h-5 w-5" />,
     'alert-circle': <AlertCircle className="h-5 w-5" />,
   };
-
-  const convertedQuickActions = quickActions.map((action) => ({
-    ...action,
-    icon: iconMap[action.icon] || <ArrowUp className="h-5 w-5" />,
-    onClick: () => router.push(action.route),
-  }));
 
   const convertedInsights = insights.map((insight) => ({
     ...insight,
@@ -69,7 +47,7 @@ export function OverviewWidgets({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Recent Activity Widget */}
       <Card>
         <CardHeader>
@@ -112,39 +90,6 @@ export function OverviewWidgets({
         </CardContent>
       </Card>
 
-      {/* Quick Actions Widget */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {convertedQuickActions.map((action) => (
-              <button
-                key={action.id}
-                onClick={action.onClick}
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left group"
-              >
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{
-                    backgroundColor: `${action.iconColor}15`,
-                    color: action.iconColor,
-                  }}
-                >
-                  {action.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">{action.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{action.description}</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Insights Widget */}
       <Card>
         <CardHeader>
@@ -155,7 +100,7 @@ export function OverviewWidgets({
             {convertedInsights.map((insight) => (
               <div key={insight.id} className="flex items-start gap-3">
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                   style={{
                     backgroundColor: `${insight.iconColor}15`,
                     color: insight.iconColor,

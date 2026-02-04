@@ -24,7 +24,9 @@ import { AccountsWidget } from '@/components/invest/accounts-widget';
 import { InsightsWidget } from '@/components/invest/insights-widget';
 import { NetWorthWidget } from '@/components/invest/net-worth-widget';
 import { InvestmentPolicyWidget } from '@/components/invest/investment-policy-widget';
+import { QuickActionsWidget } from '@/components/invest/quick-actions-widget';
 import { WidgetService } from '@/services/widget.service';
+import { AIChatWidget } from '@/components/invest/ai-chat-widget';
 
 export default function Invest() {
   const router = useRouter();
@@ -45,7 +47,6 @@ export default function Invest() {
   const [financialGoals, setFinancialGoals] = useState<any[]>([]);
   const [investmentPolicy, setInvestmentPolicy] = useState<any>(null);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
-  const [quickActions, setQuickActions] = useState<any[]>([]);
   const [widgetInsights, setWidgetInsights] = useState<any[]>([]);
 
   const loadPortfolio = async () => {
@@ -111,7 +112,6 @@ export default function Invest() {
         financialGoalsData,
         investmentPolicyData,
         recentActivitiesData,
-        quickActionsData,
         widgetInsightsData,
       ] = await Promise.all([
         WidgetService.getInsights(accountId),
@@ -119,7 +119,6 @@ export default function Invest() {
         WidgetService.getFinancialGoals(accountId),
         WidgetService.getInvestmentPolicy(accountId),
         WidgetService.getRecentActivities(accountId),
-        WidgetService.getQuickActions(accountId),
         WidgetService.getWidgetInsights(accountId),
       ]);
 
@@ -128,7 +127,6 @@ export default function Invest() {
       setFinancialGoals(financialGoalsData);
       setInvestmentPolicy(investmentPolicyData);
       setRecentActivities(recentActivitiesData);
-      setQuickActions(quickActionsData);
       setWidgetInsights(widgetInsightsData);
     } catch (error) {
       console.error('Failed to load widget data:', error);
@@ -204,58 +202,44 @@ export default function Invest() {
         Welcome, {getUserFirstName()}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         {/* Left (2/3 width) */}
-        <div className="col-span-2">
-          <InsightsWidget
-            insights={insights}
-            positions={positions}
-            portfolioGains={portfolioGains}
-            accountBalance={accountBalance}
-          />
-        </div>
+        <InsightsWidget
+          insights={widgetInsights}
+          positions={positions}
+          portfolioGains={portfolioGains}
+          accountBalance={accountBalance}
+        />
 
         {/* Chat with Bluum AI Card - Right (1/3 width) */}
-        <Card className="rounded-lg border border-gray-200 shadow-none h-full">
-          <CardContent className="p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Chat with your personal AI</h2>
-            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-              Track and manage your portfolio with real-time insights and ease.
-            </p>
-            <Button
-              onClick={handleChat}
-              className="w-full bg-white text-gray-900 hover:bg-gray-50 border border-gray-300 shadow-sm rounded-md"
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Start Chat
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+        <AIChatWidget />
+      </section>
 
       {/* Net Worth Widget */}
-      <NetWorthWidget accountBalance={accountBalance} positions={positions} />
+      <section className='py-2'>
+        <NetWorthWidget accountBalance={accountBalance} positions={positions} />
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PortfolioPerformanceChart />
-        <AccountsWidget accounts={accounts} />
-      </div>
+      <section className="py-2 grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        {/* Left (2/3 width) */}
+        <div className="col-span-2">
+          <PortfolioPerformanceChart />
+        </div>
 
-      {/* Financial plan widget */}
-      <FinancialPlan goals={financialGoals} />
+        {/* Right (1/3 width) */}
+        <div className="col-span-1">
+          <QuickActionsWidget />
+        </div>
+      </section>
 
-      {/* Investment Policy Widget */}
-      <InvestmentPolicyWidget policy={investmentPolicy} />
+      <section className="py-2">
+        <FinancialPlan goals={financialGoals} />
+      </section>
 
-      {/* Holdings Widget */}
-      <HoldingsWidget />
+      <section className="py-4">
+        <InvestmentPolicyWidget policy={investmentPolicy} />
+      </section>
 
-      {/* Portfolio Overview Widgets */}
-      <OverviewWidgets
-        recentActivities={recentActivities}
-        quickActions={quickActions}
-        insights={widgetInsights}
-      />
     </div>
   );
 }

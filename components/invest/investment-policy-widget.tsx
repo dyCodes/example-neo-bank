@@ -86,7 +86,7 @@ export function InvestmentPolicyWidget({ policy }: InvestmentPolicyWidgetProps) 
       </div>
 
       {/* Policy Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {/* 1. Risk Tolerance */}
         <div className="p-4 rounded-xl bg-white border border-gray-200 flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -148,42 +148,6 @@ export function InvestmentPolicyWidget({ policy }: InvestmentPolicyWidgetProps) 
           </div>
         </div>
 
-        {/* 3. Liquidity */}
-        <div className="p-4 rounded-xl bg-white border border-gray-200 flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-cyan-100">
-              <Droplets className="h-5 w-5 text-cyan-600" />
-            </div>
-            <div
-              className="text-sm font-semibold"
-              style={{ color: '#1F2937', fontSize: 14, fontFamily: 'Inter', fontWeight: 600 }}
-            >
-              Liquidity
-            </div>
-          </div>
-          <div className="text-sm text-gray-600">
-            {currentPolicy.liquidity.description}
-          </div>
-        </div>
-
-        {/* 4. Tax Considerations */}
-        <div className="p-4 rounded-xl bg-white border border-gray-200 flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-yellow-100">
-              <DollarSign className="h-5 w-5 text-yellow-600" />
-            </div>
-            <div
-              className="text-sm font-semibold"
-              style={{ color: '#1F2937', fontSize: 14, fontFamily: 'Inter', fontWeight: 600 }}
-            >
-              Tax Considerations
-            </div>
-          </div>
-          <div className="text-sm text-gray-600">
-            {currentPolicy.taxConsiderations}
-          </div>
-        </div>
-
         {/* 5. Objectives */}
         <div className="p-4 rounded-xl bg-white border border-gray-200 flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -225,13 +189,14 @@ export function InvestmentPolicyWidget({ policy }: InvestmentPolicyWidgetProps) 
               Target Allocation
             </div>
           </div>
-          <div className="flex flex-col gap-3">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Donut Chart */}
             <div className="relative">
               <ResponsiveContainer width="100%" height={120}>
                 <PieChart>
                   <Pie
-                    data={allocationData}
+                    data={allocationData as any[]}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -274,41 +239,6 @@ export function InvestmentPolicyWidget({ policy }: InvestmentPolicyWidgetProps) 
           </div>
         </div>
 
-        {/* 7. Restrictions */}
-        <div className="p-4 rounded-xl bg-white border border-gray-200 flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-100">
-              <Ban className="h-5 w-5 text-red-600" />
-            </div>
-            <div
-              className="text-sm font-semibold"
-              style={{ color: '#1F2937', fontSize: 14, fontFamily: 'Inter', fontWeight: 600 }}
-            >
-              Restrictions
-            </div>
-          </div>
-          <div className="text-sm text-gray-600">
-            {currentPolicy.restrictions}
-          </div>
-        </div>
-
-        {/* 8. Rebalancing */}
-        <div className="p-4 rounded-xl bg-white border border-gray-200 flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-100">
-              <RotateCcw className="h-5 w-5 text-purple-600" />
-            </div>
-            <div
-              className="text-sm font-semibold"
-              style={{ color: '#1F2937', fontSize: 14, fontFamily: 'Inter', fontWeight: 600 }}
-            >
-              Rebalancing
-            </div>
-          </div>
-          <div className="text-sm text-gray-600">
-            {currentPolicy.rebalancing}
-          </div>
-        </div>
       </div>
     </div>
   );

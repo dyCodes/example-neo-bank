@@ -1,0 +1,156 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Sparkles, Send } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+
+interface AIChatWidgetProps {
+  onChatStart?: (message?: string) => void;
+}
+
+const SUGGESTED_PROMPTS = [
+  'What is the next billion-dollar company?',
+  'How can I invest in private AI companies with minimal funds?',
+];
+
+export function AIChatWidget({ onChatStart }: AIChatWidgetProps) {
+  const router = useRouter();
+  const [inputValue, setInputValue] = useState('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && inputValue.trim()) {
+      handleSend();
+    }
+  };
+
+  const handleSend = () => {
+    if (inputValue.trim()) {
+      if (onChatStart) {
+        onChatStart(inputValue.trim());
+      } else {
+        router.push(`/invest/chat?message=${encodeURIComponent(inputValue.trim())}`);
+      }
+      setInputValue('');
+    }
+  };
+
+  const handlePromptClick = (prompt: string) => {
+    if (onChatStart) {
+      onChatStart(prompt);
+    } else {
+      router.push(`/invest/chat?message=${encodeURIComponent(prompt)}`);
+    }
+  };
+
+  return (
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <div className="w-full flex flex-col items-center gap-8">
+          {/* Avatar Section */}
+          <div className="relative flex flex-col items-start">
+            {/* Blur background effect */}
+            <div
+              className="absolute left-0 top-0 w-32 h-32 rounded-full"
+              style={{
+                background: 'rgba(79, 70, 229, 0.30)',
+                boxShadow: '64px 64px 64px',
+                borderRadius: '9999px',
+                filter: 'blur(32px)',
+              }}
+            />
+            {/* Avatar circle */}
+            <div
+              className="relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
+              style={{
+                boxShadow: '0px 0px 40px -10px rgba(79, 70, 229, 0.15)',
+                outline: '4px rgba(255, 255, 255, 0.10) solid',
+                outlineOffset: '-4px',
+                background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.8), rgba(139, 92, 246, 0.8))',
+              }}
+            >
+              {/* Letter "b" */}
+              <div
+                className="flex flex-col items-start justify-center text-white text-[43.70px] font-bold italic leading-[60px]"
+                style={{
+                  fontFamily: 'Inter',
+                  color: 'rgba(255, 255, 255, 0.20)',
+                }}
+              >
+                b
+              </div>
+              {/* Shine effect */}
+              <div
+                className="absolute w-44 h-32"
+                style={{
+                  left: '47.03px',
+                  top: '-27.48px',
+                  transform: 'rotate(45deg)',
+                  transformOrigin: 'top left',
+                  opacity: 0.5,
+                  background: 'linear-gradient(45deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.10) 50%, rgba(255, 255, 255, 0) 100%)',
+                  boxShadow: '16px 16px 16px',
+                  filter: 'blur(8px)',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Input Section */}
+          <div className="w-full relative flex items-center justify-center">
+            <div className="flex-1 h-14 relative">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyPress={handleInputKeyPress}
+                placeholder="Ask AI"
+                className="w-full text-base h-full pl-14 pr-16 py-5 bg-white rounded-full outline outline-1 outline-gray-200 text-gray-700 font-light placeholder:text-gray-400 focus:outline-2 focus:outline-[#4F46E5] transition-all"
+                style={{
+                  fontFamily: 'Inter',
+                }}
+              />
+              {/* Sparkles icon on left */}
+              <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-gray-400" />
+              </div>
+              {/* Send icon on right */}
+              <button
+                onClick={handleSend}
+                className="absolute cursor-pointer right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-9 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-80 transition-opacity"
+              >
+                <Send className="w-5 h-5 text-gray-400 rotate-[-12deg]" />
+              </button>
+            </div>
+          </div>
+
+          {/* Suggested Prompts */}
+          <div className="w-full max-w-3xl flex flex-col items-center gap-4">
+            <div className="w-full flex flex-col items-center gap-4">
+              {SUGGESTED_PROMPTS.map((prompt, index) => (
+                <button
+                  key={index}
+                  onClick={() => handlePromptClick(prompt)}
+                  className="px-4 py-1.5 bg-white cursor-pointer rounded-full outline outline-1 outline-gray-200 outline-offset-[-1px] hover:bg-gray-50 transition-colors"
+                >
+                  <span
+                    className="text-center text-gray-700 text-xs font-normal leading-5"
+                    style={{
+                      fontFamily: 'Inter',
+                    }}
+                  >
+                    {prompt}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

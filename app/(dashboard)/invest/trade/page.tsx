@@ -23,6 +23,7 @@ import { InvestmentService, type Position } from '@/services/investment.service'
 import { AccountService } from '@/services/account.service';
 import { getAuth } from '@/lib/auth';
 import { toast } from 'sonner';
+import { HoldingsWidget } from '@/components/invest/holdings-widget';
 
 interface Asset {
   id: string;
@@ -784,6 +785,9 @@ export default function TradeStock() {
           </Card>
         </div>
       </div>
+
+      {/* Holdings Widget */}
+      <HoldingsWidget />
     </div>
   );
 }

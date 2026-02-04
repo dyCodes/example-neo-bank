@@ -60,6 +60,7 @@ export interface AllocationData {
   name: string;
   value: number;
   color: string;
+  [key: string]: any;
 }
 
 export interface InvestmentPolicy {
@@ -101,15 +102,6 @@ export interface RecentActivity {
   amount: number | null;
   date: string;
   iconEmoji: string;
-}
-
-export interface QuickAction {
-  id: string;
-  title: string;
-  description: string;
-  icon: string; // Icon identifier
-  iconColor: string;
-  route: string;
 }
 
 export interface WidgetInsight {
@@ -182,15 +174,6 @@ export class WidgetService {
     const queryParams = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
     const response = await fetch(`/api/widget/recent-activities${queryParams}`);
     return handleResponse<RecentActivity[]>(response);
-  }
-
-  /**
-   * Get quick actions for OverviewWidgets
-   */
-  static async getQuickActions(accountId?: string): Promise<QuickAction[]> {
-    const queryParams = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
-    const response = await fetch(`/api/widget/quick-actions${queryParams}`);
-    return handleResponse<QuickAction[]>(response);
   }
 
   /**

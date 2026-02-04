@@ -140,8 +140,8 @@ export function PortfolioPerformanceChart({
       const sp500Percent = ((dataPoint.sp500 - 100) / 100) * 100;
 
       return (
-        <div className="rounded-lg border border-white/10 bg-[#0E0F1A] p-3 shadow-lg">
-          <p className="text-xs font-medium text-white/80 mb-2">{dataPoint.date}</p>
+        <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+          <p className="text-xs font-medium text-gray-900 mb-2">{dataPoint.date}</p>
           {payload.map((entry: any, index: number) => {
             const percent = entry.dataKey === 'portfolio' ? portfolioPercent : sp500Percent;
             return (
@@ -149,7 +149,7 @@ export function PortfolioPerformanceChart({
                 key={index}
                 className="text-xs"
                 style={{
-                  color: entry.dataKey === 'portfolio' ? '#60A5FA' : '#9CA3AF',
+                  color: entry.dataKey === 'portfolio' ? '#3B82F6' : '#6B7280',
                 }}
               >
                 {entry.dataKey === 'portfolio' ? 'Your Portfolio' : 'S&P 500'}:{' '}
@@ -165,16 +165,15 @@ export function PortfolioPerformanceChart({
   };
 
   return (
-    <Card className="bg-[#141522] border border-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.05)]">
-      <CardHeader className="pb-4">
+    <Card>
+      <CardHeader className="pb-0">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15 text-blue-300">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
               <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="text-lg font-semibold text-white">Portfolio Performance</CardTitle>
-              <p className="text-xs text-white/60 mt-1">Compared to S&P 500 benchmark</p>
+              <CardTitle className="text-lg font-semibold text-gray-900">Portfolio Performance</CardTitle>
             </div>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -183,8 +182,8 @@ export function PortfolioPerformanceChart({
                 key={range}
                 onClick={() => setSelectedRange(range)}
                 className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-colors ${selectedRange === range
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
                 {range}
@@ -194,26 +193,26 @@ export function PortfolioPerformanceChart({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-5">
-        <div className="rounded-2xl border border-white/5 bg-[#0F111B] p-4">
+      <CardContent className="">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 px-4">
           <ResponsiveContainer width="100%" height={280}>
             <ComposedChart data={chartData} margin={{ top: 12, right: 10, left: 0, bottom: 20 }}>
               <defs>
                 <linearGradient id="colorPortfolio" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.03} />
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.5)' }}
+                tick={{ fontSize: 11, fill: '#6B7280' }}
                 tickLine={false}
                 axisLine={false}
                 height={32}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.45)' }}
+                tick={{ fontSize: 11, fill: '#6B7280' }}
                 tickLine={false}
                 axisLine={false}
                 domain={['auto', 'auto']}
@@ -223,7 +222,7 @@ export function PortfolioPerformanceChart({
               <Area
                 type="monotone"
                 dataKey="portfolio"
-                stroke="#60A5FA"
+                stroke="#3B82F6"
                 strokeWidth={2}
                 fill="url(#colorPortfolio)"
                 name="Your Portfolio"
@@ -231,7 +230,7 @@ export function PortfolioPerformanceChart({
               <Line
                 type="monotone"
                 dataKey="sp500"
-                stroke="#9CA3AF"
+                stroke="#6B7280"
                 strokeWidth={2}
                 strokeDasharray="6 6"
                 dot={false}
@@ -239,29 +238,6 @@ export function PortfolioPerformanceChart({
               />
             </ComposedChart>
           </ResponsiveContainer>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-blue-400" />
-              <span className="text-xs text-white/70">Your Portfolio</span>
-            </div>
-            <span className="text-sm font-semibold text-white">
-              {performance.portfolio >= 0 ? '+' : ''}
-              {performance.portfolio.toFixed(2)}%
-            </span>
-          </div>
-          <div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-gray-400" />
-              <span className="text-xs text-white/70">S&P 500</span>
-            </div>
-            <span className="text-sm font-semibold text-white">
-              {performance.sp500 >= 0 ? '+' : ''}
-              {performance.sp500.toFixed(2)}%
-            </span>
-          </div>
         </div>
       </CardContent>
     </Card>
