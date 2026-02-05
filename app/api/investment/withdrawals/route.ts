@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { bluumApi } from '@/lib/bluum-api';
-import type { WithdrawalRequest } from '@/types/bluum';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,24 +11,57 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate required fields
-    if (!body.amount || !body.funding_details) {
+    if (!body.amount) {
       return NextResponse.json(
-        { error: 'amount and funding_details are required' },
+        { error: 'amount is required' },
         { status: 400 }
       );
     }
 
-    // Structure withdrawal request according to backend API
-    const withdrawalData: WithdrawalRequest = {
-      account_id: accountId,
-      amount: body.amount,
-      funding_details: body.funding_details,
-      description: body.description,
-      external_reference_id: body.external_reference_id,
-    };
+    // Support both new format (plaidOptions) and legacy format (funding_details)
+    let withdrawalData: any;
+    
+    if (body.plaidOptions) {
+      // New format: direct plaid_options structure
+      withdrawalData = {
+        amount: body.amount,
+        currency: body.currency || 'USD',
+        method: body.method || 'ach_plaid',
+        description: body.description,
+        plaid_options: body.plaidOptions,
+      };
+    } else if (body.funding_details) {
+      // Legacy format: map to new format
+      const plaidOptions = body.funding_details.bank_account_id
+        ? {
+            item_id: body.funding_details.bank_account_id,
+            account_id: body.funding_details.bank_account_id,
+          }
+        : undefined;
 
-    const transaction = await bluumApi.withdrawFunds(withdrawalData);
-    return NextResponse.json(transaction, { status: 202 });
+      if (!plaidOptions) {
+        return NextResponse.json(
+          { error: 'Plaid options are required for ACH withdrawals' },
+          { status: 400 }
+        );
+      }
+
+      withdrawalData = {
+        amount: body.amount,
+        currency: body.currency || body.funding_details.fiat_currency || 'USD',
+        method: body.funding_details.method === 'ach' ? 'ach_plaid' : 'wire',
+        description: body.description,
+        plaid_options: plaidOptions,
+      };
+    } else {
+      return NextResponse.json(
+        { error: 'Either plaidOptions or funding_details is required' },
+        { status: 400 }
+      );
+    }
+
+    const response = await bluumApi.createWithdrawal(accountId, withdrawalData, body.idempotency_key);
+    return NextResponse.json(response, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
       {

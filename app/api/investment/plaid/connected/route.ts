@@ -10,9 +10,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'account_id is required' }, { status: 400 });
     }
 
-  const type = searchParams.get('type') || 'plaid';
-  const response = await bluumApi.getFundingSources(accountId, type === 'all' ? 'all' : 'plaid');
-  return NextResponse.json(response, { status: 200 });
+    const type = searchParams.get('type') || 'plaid';
+    const response = await bluumApi.getFundingSources(accountId, type === 'all' ? 'all' : 'plaid');
+    
+    // Ensure response structure matches expected format
+    // API returns { status: "success", data: { items: [...] } }
+    return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       {

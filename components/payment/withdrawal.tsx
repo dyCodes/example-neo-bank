@@ -72,11 +72,39 @@ export function Withdrawal({
     loadConnectedAccounts();
   }, [accountId, withdrawalMethod]);
 
-  const handlePlaidSuccess = (token: string, metadata: any) => {
+  const handlePlaidSuccess = async (token: string, metadata: any) => {
     setPublicToken(token);
     // If multiple accounts, select the first one
     if (metadata.accounts && metadata.accounts.length > 0) {
       setSelectedPlaidAccount(metadata.accounts[0].id);
+    }
+
+    // Save the connection to the backend
+    setLoadingAccounts(true);
+    try {
+      await PlaidService.connectAccount(accountId, token);
+
+      const accounts = await PlaidService.getConnectedAccounts(accountId);
+      setConnectedAccounts(accounts);
+
+      // Auto-select the newly connected account if available
+      if (metadata.accounts && metadata.accounts.length > 0 && accounts.length > 0) {
+        const newAccountId = metadata.accounts[0].id;
+        // Find the account in the loaded accounts
+        const accountExists = accounts.some((item) =>
+          item.accounts.some((acc) => acc.accountId === newAccountId)
+        );
+        if (accountExists) {
+          setSelectedPlaidAccount(newAccountId);
+        }
+      }
+
+      toast.success('Bank account connected successfully!');
+    } catch (error: any) {
+      console.error('Failed to connect or reload accounts:', error);
+      toast.error(error.message || 'Failed to connect bank account');
+    } finally {
+      setLoadingAccounts(false);
     }
   };
 
@@ -92,14 +120,14 @@ export function Withdrawal({
       // Reload accounts after deletion
       const accounts = await PlaidService.getConnectedAccounts(accountId);
       setConnectedAccounts(accounts);
-      
+
       // Clear selection if deleted account was selected
-      if (connectedAccounts.some((item) => 
+      if (connectedAccounts.some((item) =>
         item.id === fundingSourceId && item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
       )) {
         setSelectedPlaidAccount(null);
       }
-      
+
       toast.success('Bank account disconnected successfully');
     } catch (error: any) {
       console.error('Failed to disconnect account:', error);
@@ -191,16 +219,17 @@ export function Withdrawal({
               item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
             ) || connectedAccounts[0];
 
-          request.itemId = selectedItem.providerId;
+          // Use itemId (from API) or providerId (legacy) as fallback
+          request.item_id = selectedItem.itemId || selectedItem.providerId;
           if (selectedPlaidAccount) {
-            request.accountId = selectedPlaidAccount;
+            request.plaid_account_id = selectedPlaidAccount;
           } else if (selectedItem.accounts.length > 0) {
-            request.accountId = selectedItem.accounts[0].accountId;
+            request.plaid_account_id = selectedItem.accounts[0].accountId;
           }
         } else if (publicToken) {
-          request.publicToken = publicToken;
+          request.public_token = publicToken;
           if (selectedPlaidAccount) {
-            request.accountId = selectedPlaidAccount;
+            request.plaid_account_id = selectedPlaidAccount;
           }
         }
 
@@ -213,20 +242,9 @@ export function Withdrawal({
       }
 
       // Handle manual bank transfer
-      const bankAccountId = `bank_${routingNumber.slice(-4)}_${accountNumber.slice(-4)}`;
-
-      await InvestmentService.withdrawFunds({
-        account_id: accountId,
-        amount: amountStr,
-        funding_details: {
-          funding_type: 'fiat',
-          fiat_currency: 'USD',
-          bank_account_id: bankAccountId,
-          method: 'ach',
-        },
-        description: `Bank transfer withdrawal of $${amountStr} to ${bankName}`,
-        external_reference_id: `withdrawal_${Date.now()}`,
-      });
+      toast.error('Manual bank transfers not available at this time');
+      setProcessing(false);
+      return;
 
       toast.success('Withdrawal request submitted successfully!');
       onSuccess?.();
@@ -319,11 +337,10 @@ export function Withdrawal({
                     item.accounts.map((account) => (
                       <div
                         key={account.accountId}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedPlaidAccount === account.accountId
-                            ? 'border-primary bg-primary/5'
-                            : 'hover:bg-muted'
-                        }`}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedPlaidAccount === account.accountId
+                          ? 'border-primary bg-primary/5'
+                          : 'hover:bg-muted'
+                          }`}
                         onClick={() => setSelectedPlaidAccount(account.accountId)}
                       >
                         <div className="flex items-center gap-2">

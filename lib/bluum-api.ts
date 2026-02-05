@@ -127,6 +127,7 @@ class BluumApiClient {
     params?: {
       symbol?: string;
       non_zero_only?: boolean;
+      refresh_prices?: boolean;
     }
   ) {
     const response = await this.client.get(`/trading/accounts/${accountId}/positions`, {
@@ -135,42 +136,12 @@ class BluumApiClient {
     return response.data;
   }
 
-  async getPosition(accountId: string, positionId: string) {
-    const response = await this.client.get(
-      `/trading/accounts/${accountId}/positions/${positionId}`
-    );
-    return response.data;
-  }
-
-  // Wallet
-  async fundAccount(
-    accountId: string,
-    fundData: {
-      amount: string;
-      funding_details: {
-        funding_type: 'fiat' | 'crypto';
-        fiat_currency?: 'USD';
-        bank_account_id?: string;
-        method?: 'ach' | 'wire';
-        crypto_asset?: 'BTC' | 'ETH' | 'USDC' | 'USDT';
-        wallet_address?: string;
-        network?: 'Bitcoin' | 'Ethereum' | 'Polygon';
-      };
-      description?: string;
-      external_reference_id?: string;
-      public_token?: string;
-    }
-  ) {
-    const response = await this.client.post(`/wallet/accounts/${accountId}/funding`, fundData);
-    return response.data;
-  }
-
   async listTransactions(
     accountId: string,
     params?: {
       type?: 'deposit' | 'withdrawal';
-      status?: 'pending' | 'processing' | 'settled' | 'failed' | 'canceled';
-      funding_type?: 'fiat' | 'crypto';
+      status?: 'pending' | 'processing' | 'received' | 'completed' | 'submitted' | 'expired' | 'canceled' | 'failed';
+      currency?: string;
       date_from?: string;
       date_to?: string;
       limit?: number;
@@ -181,25 +152,6 @@ class BluumApiClient {
       params,
     });
     return response.data.transactions;
-  }
-
-  async withdrawFunds(withdrawalData: {
-    account_id: string;
-    amount: string;
-    funding_details: {
-      funding_type: 'fiat' | 'crypto';
-      fiat_currency?: 'USD';
-      bank_account_id?: string;
-      method?: 'ach' | 'wire';
-      crypto_asset?: 'BTC' | 'ETH' | 'USDC' | 'USDT';
-      wallet_address?: string;
-      network?: 'Bitcoin' | 'Ethereum' | 'Polygon';
-    };
-    description?: string;
-    external_reference_id?: string;
-  }) {
-    const response = await this.client.post('/wallet/withdrawals', withdrawalData);
-    return response.data;
   }
 
 
@@ -214,9 +166,48 @@ class BluumApiClient {
     return response.data;
   }
 
-  // Initiate Deposit (ACH, Plaid, etc)
-  async createDeposit(accountId: string, depositData: Record<string, any>) {
-    const response = await this.client.post(`/accounts/${accountId}/deposits`, depositData);
+  // Deposits
+  async createDeposit(
+    accountId: string,
+    depositData: {
+      amount: string;
+      currency?: string;
+      method: 'ach_plaid' | 'manual_bank_transfer' | 'wire';
+      description?: string;
+      plaid_options?: {
+        public_token?: string;
+        item_id?: string;
+        account_id?: string;
+      };
+    },
+    idempotencyKey?: string
+  ) {
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {};
+    const response = await this.client.post(`/accounts/${accountId}/deposits`, depositData, {
+      headers,
+    });
+    return response.data;
+  }
+
+  // Withdrawals
+  async createWithdrawal(
+    accountId: string,
+    withdrawalData: {
+      amount: string;
+      currency?: string;
+      method: 'ach_plaid' | 'wire';
+      description?: string;
+      plaid_options: {
+        item_id: string;
+        account_id: string;
+      };
+    },
+    idempotencyKey?: string
+  ) {
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {};
+    const response = await this.client.post(`/accounts/${accountId}/withdrawals`, withdrawalData, {
+      headers,
+    });
     return response.data;
   }
 
@@ -227,17 +218,13 @@ class BluumApiClient {
     return response.data;
   }
 
-  async getConnectedPlaidAccounts(accountId: string) {
-    return this.getFundingSources(accountId, 'plaid');
-  }
-
   async disconnectPlaidItem(accountId: string, fundingSourceId: string) {
     const response = await this.client.delete(
-      `/accounts/${accountId}/funding-sources/${fundingSourceId}`,
-      { params: { type: 'plaid' } }
+      `/accounts/${accountId}/funding-sources/${fundingSourceId}`
     );
     return response.data;
   }
+
 }
 
 export const bluumApi = new BluumApiClient();

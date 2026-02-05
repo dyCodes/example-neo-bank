@@ -14,10 +14,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'publicToken is required' }, { status: 400 });
     }
 
-    const { account_id, ...connectPayload } = body;
+    const connectPayload = {
+      publicToken: body.publicToken,
+    };
+
     const response = await bluumApi.connectPlaidFundingSource(accountId, connectPayload);
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
+    console.error('Plaid connect error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+
     return NextResponse.json(
       {
         error: error.response?.data || error.message,

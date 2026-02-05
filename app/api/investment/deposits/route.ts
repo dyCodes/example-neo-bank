@@ -33,16 +33,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Build plaid_options with only provided fields (snake_case for API)
+    const plaidOptionsPayload: any = {};
+    if (plaidOptions.publicToken) {
+      plaidOptionsPayload.public_token = plaidOptions.publicToken;
+    }
+    if (plaidOptions.itemId) {
+      plaidOptionsPayload.item_id = plaidOptions.itemId;
+    }
+    if (plaidOptions.accountId) {
+      plaidOptionsPayload.account_id = plaidOptions.accountId;
+    }
+
     const depositData = {
       amount: body.amount,
       currency: body.currency || 'USD',
       description: body.description,
       method: body.method || 'ach_plaid',
-      plaid_options: {
-        public_token: plaidOptions.publicToken,
-        item_id: plaidOptions.itemId,
-        account_id: plaidOptions.accountId,
-      },
+      plaid_options: plaidOptionsPayload,
     };
 
     const response = await bluumApi.createDeposit(bluumAccountId, depositData);

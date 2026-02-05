@@ -37,38 +37,6 @@ export interface OrderRequest {
   extended_hours?: boolean;
 }
 
-export interface FundRequest {
-  account_id: string;
-  amount: string;
-  funding_details: {
-    funding_type: 'fiat' | 'crypto';
-    fiat_currency?: 'USD';
-    bank_account_id?: string;
-    method?: 'ach' | 'wire';
-    crypto_asset?: 'BTC' | 'ETH' | 'USDC' | 'USDT';
-    wallet_address?: string;
-    network?: 'Bitcoin' | 'Ethereum' | 'Polygon';
-  };
-  description?: string;
-  external_reference_id?: string;
-}
-
-export interface WithdrawalRequest {
-  account_id: string;
-  amount: string;
-  funding_details: {
-    funding_type: 'fiat' | 'crypto';
-    fiat_currency?: 'USD';
-    bank_account_id?: string;
-    method?: 'ach' | 'wire';
-    crypto_asset?: 'BTC' | 'ETH' | 'USDC' | 'USDT';
-    wallet_address?: string;
-    network?: 'Bitcoin' | 'Ethereum' | 'Polygon';
-  };
-  description?: string;
-  external_reference_id?: string;
-}
-
 // Investment Service
 export class InvestmentService {
   // Positions API (Holdings)
@@ -143,19 +111,43 @@ export class InvestmentService {
     return handleResponse<any[]>(response);
   }
 
-  // Wallet API
-  static async fundAccount(fundData: FundRequest): Promise<any> {
-    const response = await fetch('/api/investment/funding', {
+  // Deposits API
+  static async createDeposit(depositData: {
+    account_id: string;
+    amount: string;
+    currency?: string;
+    method: 'ach_plaid' | 'manual_bank_transfer' | 'wire';
+    description?: string;
+    plaidOptions?: {
+      publicToken?: string;
+      itemId?: string;
+      accountId?: string;
+    };
+    idempotencyKey?: string;
+  }): Promise<any> {
+    const response = await fetch('/api/investment/deposits', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(fundData),
+      body: JSON.stringify(depositData),
     });
     return handleResponse(response);
   }
 
-  static async withdrawFunds(withdrawalData: WithdrawalRequest): Promise<any> {
+  // Withdrawals API
+  static async createWithdrawal(withdrawalData: {
+    account_id: string;
+    amount: string;
+    currency?: string;
+    method: 'ach_plaid' | 'wire';
+    description?: string;
+    plaidOptions: {
+      itemId: string;
+      accountId: string;
+    };
+    idempotencyKey?: string;
+  }): Promise<any> {
     const response = await fetch('/api/investment/withdrawals', {
       method: 'POST',
       headers: {

@@ -183,7 +183,8 @@ export function Deposit({ accountId, onSuccess, onCancel }: DepositProps) {
             item.accounts.some((acc) => acc.accountId === selectedPlaidAccount)
           ) || connectedAccounts[0];
 
-        request.itemId = selectedItem.providerId;
+        // Use itemId (from API) or providerId (legacy) as fallback
+        request.itemId = selectedItem.itemId || selectedItem.providerId;
         if (selectedPlaidAccount) {
           request.accountId = selectedPlaidAccount;
         } else if (selectedItem.accounts.length > 0) {

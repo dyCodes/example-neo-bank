@@ -27,7 +27,9 @@ export interface InitiateWithdrawalRequest {
 
 export interface ConnectedAccount {
   id: string;
-  providerId: string;
+  itemId?: string; // Plaid item ID (from API)
+  providerId?: string; // Legacy field, maps to itemId
+  institutionId?: string;
   institutionName: string;
   status: string;
   accounts: Array<{
@@ -43,7 +45,7 @@ export interface ConnectedAccount {
 }
 
 export interface ConnectedAccountsResponse {
-  fundingSources: ConnectedAccount[];
+  items: ConnectedAccount[];
 }
 
 export class PlaidService {
@@ -79,11 +81,39 @@ export class PlaidService {
 
   /**
    * Initiate a withdrawal
+   * Uses the new withdrawals endpoint with proper plaid_options structure
    */
   static async initiateWithdrawal(accountId: string, request: InitiateWithdrawalRequest) {
-    const response = await apiClient.post('/api/investment/plaid/withdrawal', {
+    // Map to the new withdrawal endpoint structure
+    const withdrawalData: any = {
+      amount: request.amount,
+      currency: request.currency || 'USD',
+      method: 'ach_plaid',
+      description: request.description,
+    };
+
+    // Build plaid_options based on what's provided
+    if (request.public_token) {
+      // New connection - use public_token
+      withdrawalData.plaidOptions = {
+        public_token: request.public_token,
+      };
+      if (request.plaid_account_id) {
+        withdrawalData.plaidOptions.account_id = request.plaid_account_id;
+      }
+    } else if (request.item_id) {
+      // Existing connection - use item_id and account_id
+      withdrawalData.plaidOptions = {
+        item_id: request.item_id,
+        account_id: request.plaid_account_id || request.item_id, // Fallback if account_id not provided
+      };
+    } else {
+      throw new Error('Either public_token or item_id must be provided for Plaid withdrawal');
+    }
+
+    const response = await apiClient.post('/api/investment/withdrawals', {
       account_id: accountId,
-      ...request,
+      ...withdrawalData,
     });
     return response.data;
   }
@@ -100,15 +130,42 @@ export class PlaidService {
   }
 
   /**
+   * Normalize connected account data to ensure consistent structure
+   */
+  private static normalizeConnectedAccount(item: any): ConnectedAccount {
+    return {
+      id: item.id,
+      itemId: item.itemId || item.providerId, // Use itemId from API, fallback to providerId
+      providerId: item.providerId || item.itemId, // Keep providerId for backward compatibility
+      institutionId: item.institutionId,
+      institutionName: item.institutionName,
+      status: item.status,
+      accounts: item.accounts || [],
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    };
+  }
+
+  /**
    * Get connected accounts for an account
    */
   static async getConnectedAccounts(accountId: string): Promise<ConnectedAccount[]> {
-    const response = await apiClient.get<{ data: ConnectedAccountsResponse }>(
-      `/api/investment/funding-sources`,
+    const response = await apiClient.get<{ status: string; data: ConnectedAccountsResponse }>(
+      `/api/investment/plaid/connected`,
       { params: { account_id: accountId, type: 'plaid' } }
     );
     console.log('getConnectedAccounts response', response.data);
-    return response.data.data.fundingSources;
+
+    // Handle both response structures for backward compatibility
+    let items: any[] = [];
+    if (response.data.data.items) {
+      items = response.data.data.items;
+    } else if ((response.data.data as any).fundingSources) {
+      items = (response.data.data as any).fundingSources;
+    }
+
+    // Normalize each item to ensure consistent structure
+    return items.map((item) => this.normalizeConnectedAccount(item));
   }
 
   /**
@@ -116,9 +173,9 @@ export class PlaidService {
    */
   static async disconnectItem(accountId: string, fundingSourceId: string) {
     const response = await apiClient.delete('/api/investment/plaid/disconnect', {
-      params: { 
+      params: {
         account_id: accountId,
-        funding_source_id: fundingSourceId 
+        funding_source_id: fundingSourceId
       },
     });
     return response.data;
