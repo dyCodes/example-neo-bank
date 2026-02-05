@@ -10,8 +10,8 @@ interface AIChatWidgetProps {
 }
 
 const SUGGESTED_PROMPTS = [
-  'What is the next billion-dollar company?',
-  'How can I invest in private AI companies with minimal funds?',
+  'What is the current market outlook and key trends?',
+  'What are the best investment opportunities right now?',
 ];
 
 export function AIChatWidget({ onChatStart }: AIChatWidgetProps) {
