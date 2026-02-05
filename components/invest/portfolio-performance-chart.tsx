@@ -27,6 +27,7 @@ interface PortfolioPerformanceChartProps {
   data?: PerformanceDataPoint[];
   portfolioPerformance?: number; // Percentage gain for selected period
   sp500Performance?: number; // Percentage gain for selected period
+  portfolioValue?: number; // Current portfolio value in USD
 }
 
 // Demo data for different time ranges
@@ -117,6 +118,7 @@ export function PortfolioPerformanceChart({
   data: externalData,
   portfolioPerformance,
   sp500Performance,
+  portfolioValue,
 }: PortfolioPerformanceChartProps) {
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1M');
 
@@ -166,11 +168,18 @@ export function PortfolioPerformanceChart({
       <CardHeader className="pb-0">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-              <TrendingUp className="h-5 w-5" />
-            </div>
             <div>
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-foreground">Portfolio Performance</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">Portfolio balance</CardTitle>
+              {portfolioValue !== undefined && (
+                <p className="text-2xl font-semibold text-gray-900 dark:text-foreground mt-2">
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(portfolioValue)}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap gap-1.5">

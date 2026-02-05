@@ -22,7 +22,6 @@ import { PortfolioPerformanceChart } from '@/components/invest/portfolio-perform
 import { FinancialPlan } from '@/components/invest/financial-plan';
 import { AccountsWidget } from '@/components/invest/accounts-widget';
 import { InsightsWidget } from '@/components/invest/insights-widget';
-import { NetWorthWidget } from '@/components/invest/net-worth-widget';
 import { InvestmentPolicyWidget } from '@/components/invest/investment-policy-widget';
 import { QuickActionsWidget } from '@/components/invest/quick-actions-widget';
 import { WidgetService } from '@/services/widget.service';
@@ -215,15 +214,14 @@ export default function Invest() {
         <AIChatWidget />
       </section>
 
-      {/* Net Worth Widget */}
-      <section className='py-2'>
-        <NetWorthWidget accountBalance={accountBalance} positions={positions} />
-      </section>
-
       <section className="py-2 grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
         {/* Left (2/3 width) */}
         <div className="col-span-2">
-          <PortfolioPerformanceChart />
+          <PortfolioPerformanceChart 
+            portfolioValue={
+              accountBalance + positions.reduce((sum, pos) => sum + (pos.value || 0), 0)
+            }
+          />
         </div>
 
         {/* Right (1/3 width) */}

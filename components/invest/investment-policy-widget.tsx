@@ -9,6 +9,10 @@ import {
   RotateCcw,
   Ban,
   CheckCircle2,
+  FileText,
+  Circle,
+  BarChart3,
+  List,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { type InvestmentPolicy } from '@/services/widget.service';
@@ -164,7 +168,7 @@ export function InvestmentPolicyWidget({ policy }: InvestmentPolicyWidgetProps) 
           <div className="flex flex-col gap-2">
             {currentPolicy.objectives.map((obj) => (
               <div key={obj.text} className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
                 <span className="text-sm text-gray-700 dark:text-foreground flex-1">{obj.text}</span>
                 <span
                   className={`px-2 py-0.5 rounded text-xs font-medium text-white ${obj.tagColor}`}
@@ -239,6 +243,82 @@ export function InvestmentPolicyWidget({ policy }: InvestmentPolicyWidgetProps) 
           </div>
         </div>
 
+      </div>
+
+      {/* Constraints & Guidelines Card */}
+      <div className="p-4 rounded-xl bg-card border border-gray-200 dark:border-border flex flex-col gap-4">
+        {/* Header */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-green-100 dark:bg-green-900/30">
+            <List className="h-4 w-4 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="text-xs font-semibold leading-[18px] text-gray-900 dark:text-foreground">
+            Constraints & Guidelines
+          </div>
+        </div>
+
+        {/* Guidelines List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Liquidity */}
+          <div className="p-3 rounded-lg border border-gray-200 dark:border-border flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-green-100 dark:bg-green-900/30 shrink-0">
+              <FileText className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1 flex flex-col gap-0.5">
+              <div className="text-[13px] font-semibold text-gray-900 dark:text-foreground">
+                Liquidity
+              </div>
+              <div className="text-xs leading-[18px] text-gray-600 dark:text-muted-foreground">
+                {currentPolicy.liquidity.description}
+              </div>
+            </div>
+          </div>
+
+          {/* Tax Considerations */}
+          <div className="p-3 rounded-lg border border-gray-200 dark:border-border flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-green-100 dark:bg-green-900/30 shrink-0">
+              <FileText className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1 flex flex-col gap-0.5">
+              <div className="text-[13px] font-semibold text-gray-900 dark:text-foreground">
+                Tax Considerations
+              </div>
+              <div className="text-xs leading-[18px] text-gray-600 dark:text-muted-foreground">
+                {currentPolicy.taxConsiderations}
+              </div>
+            </div>
+          </div>
+
+          {/* Restrictions */}
+          <div className="p-3 rounded-lg border border-gray-200 dark:border-border flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-green-100 dark:bg-green-900/30 shrink-0">
+              <Circle className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1 flex flex-col gap-0.5">
+              <div className="text-[13px] font-semibold text-gray-900 dark:text-foreground">
+                Restrictions
+              </div>
+              <div className="text-xs leading-[18px] text-gray-600 dark:text-muted-foreground">
+                {currentPolicy.restrictions}
+              </div>
+            </div>
+          </div>
+
+          {/* Rebalancing */}
+          <div className="p-3 rounded-lg border border-gray-200 dark:border-border flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md flex items-center justify-center bg-green-100 dark:bg-green-900/30 shrink-0">
+              <BarChart3 className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1 flex flex-col gap-0.5">
+              <div className="text-[13px] font-semibold text-gray-900 dark:text-foreground">
+                Rebalancing
+              </div>
+              <div className="text-xs leading-[18px] text-gray-600 dark:text-muted-foreground">
+                {currentPolicy.rebalancing}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
