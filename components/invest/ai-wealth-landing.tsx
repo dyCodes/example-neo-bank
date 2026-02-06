@@ -28,17 +28,17 @@ export function AIWealthLanding({
       {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-full p-2" style={{ backgroundColor: '#edf9cd' }}>
-            <Sparkles className="h-6 w-6" style={{ color: '#083423' }} />
+          <div className="rounded-full p-2 bg-[#edf9cd] dark:bg-emerald-900/30">
+            <Sparkles className="h-6 w-6 text-[#083423] dark:text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: '#083423' }}>
+            <h1 className="text-3xl font-bold text-[#083423] dark:text-white">
               AI Personalized Wealth Management
             </h1>
             <div className="flex items-center gap-2 mt-2">
               <Badge
                 variant="outline"
-                style={{ borderColor: '#083423', color: '#083423', backgroundColor: '#edf9cd' }}
+                className="border-[#083423] text-[#083423] bg-[#edf9cd] dark:border-emerald-500/50 dark:text-emerald-400 dark:bg-emerald-900/20"
               >
                 AI-Powered
               </Badge>
@@ -58,8 +58,7 @@ export function AIWealthLanding({
         <Button
           onClick={onStartOnboarding}
           size="lg"
-          style={{ backgroundColor: '#083423', color: 'white' }}
-          className="mt-4"
+          className="mt-4 bg-[#083423] text-white hover:bg-[#083423]/90 dark:bg-emerald-600 dark:hover:bg-emerald-700"
         >
           Get Started with AI Wealth Management
         </Button>

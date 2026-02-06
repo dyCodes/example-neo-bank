@@ -62,31 +62,31 @@ export function InvestingAnnouncementPopup({ onGetStarted }: InvestingAnnounceme
       open={open} 
       onOpenChange={setOpen} 
       className="max-w-5xl"
-      cardClassName="!p-0 bg-[#edf9cd] border-0 shadow-none"
+      cardClassName="!p-0 bg-[#edf9cd] dark:bg-emerald-950 border-0 shadow-none"
     >
-      <DialogContent className="p-0 max-h-[90vh] overflow-y-auto">
-        <div className="relative overflow-hidden w-full h-full" style={{ backgroundColor: '#edf9cd' }}>
+      <DialogContent className="p-0 max-h-[90vh] overflow-y-auto border-0">
+        <div className="relative overflow-hidden w-full h-full bg-[#edf9cd] dark:bg-emerald-950">
           {/* Decorative background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#edf9cd]/90 via-[#edf9cd] to-[#edf9cd]/90" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#edf9cd]/90 via-[#edf9cd] to-[#edf9cd]/90 dark:from-emerald-950/90 dark:via-emerald-950 dark:to-emerald-950/90" />
           
           <div className="relative p-8">
             <DialogHeader className="text-center space-y-4">
               <div className="flex justify-center mb-4">
                 <div className="relative">
-                  <div className="rounded-full p-4 animate-pulse" style={{ backgroundColor: 'rgba(8, 28, 20, 0.1)' }}>
-                    <TrendingUp className="h-12 w-12" style={{ color: '#083423' }} />
+                  <div className="rounded-full p-4 animate-pulse bg-[#081c14]/10 dark:bg-emerald-400/10">
+                    <TrendingUp className="h-12 w-12 text-[#083423] dark:text-emerald-400" />
                   </div>
                   <div className="absolute -top-1 -right-1">
-                    <Sparkles className="h-6 w-6 fill-[#083423]" style={{ color: '#083423' }} />
+                    <Sparkles className="h-6 w-6 fill-[#083423] text-[#083423] dark:fill-emerald-400 dark:text-emerald-400" />
                   </div>
                 </div>
               </div>
               
-              <DialogTitle className="text-3xl font-bold" style={{ color: '#083423' }}>
+              <DialogTitle className="text-3xl font-bold text-[#083423] dark:text-emerald-50">
                 Start Investing Today!
               </DialogTitle>
               
-              <DialogDescription className="text-base">
+              <DialogDescription className="text-base text-muted-foreground dark:text-emerald-200/70">
                 We're excited to launch our new investing feature. Grow your wealth with 
                 access to U.S. and Nigerian stocks, all in one place.
               </DialogDescription>
@@ -96,86 +96,86 @@ export function InvestingAnnouncementPopup({ onGetStarted }: InvestingAnnounceme
               {/* Key Stats */}
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div className="space-y-2">
-                  <div className="text-2xl font-bold" style={{ color: '#083423' }}>$20</div>
-                  <div className="text-xs text-muted-foreground">Minimum Start</div>
+                  <div className="text-2xl font-bold text-[#083423] dark:text-emerald-400">$20</div>
+                  <div className="text-xs text-muted-foreground dark:text-emerald-200/50">Minimum Start</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-2xl font-bold" style={{ color: '#083423' }}>0%</div>
-                  <div className="text-xs text-muted-foreground">Commission</div>
+                  <div className="text-2xl font-bold text-[#083423] dark:text-emerald-400">0%</div>
+                  <div className="text-xs text-muted-foreground dark:text-emerald-200/50">Commission</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-2xl font-bold" style={{ color: '#083423' }}>24/7</div>
-                  <div className="text-xs text-muted-foreground">Trading</div>
+                  <div className="text-2xl font-bold text-[#083423] dark:text-emerald-400">24/7</div>
+                  <div className="text-xs text-muted-foreground dark:text-emerald-200/50">Trading</div>
                 </div>
               </div>
 
               {/* Marketing Cards */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {/* US Stocks */}
-                <Card style={{ backgroundColor: 'white', borderColor: '#083423' }}>
+                <Card className="bg-white dark:bg-emerald-900/20 border-[#083423] dark:border-emerald-800">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" style={{ color: '#083423' }} />
-                      <h3 className="font-semibold text-sm">US Stocks</h3>
+                      <TrendingUp className="h-5 w-5 text-[#083423] dark:text-emerald-400" />
+                      <h3 className="font-semibold text-sm dark:text-emerald-50">US Stocks</h3>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium">AAPL</span>
-                        <span className="text-xs text-green-600">+2.1%</span>
+                        <span className="text-xs font-medium dark:text-emerald-100">AAPL</span>
+                        <span className="text-xs text-green-600 dark:text-green-400">+2.1%</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium">NVDA</span>
-                        <span className="text-xs text-green-600">+3.5%</span>
+                        <span className="text-xs font-medium dark:text-emerald-100">NVDA</span>
+                        <span className="text-xs text-green-600 dark:text-green-400">+3.5%</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium">MSFT</span>
-                        <span className="text-xs text-green-600">+1.8%</span>
+                        <span className="text-xs font-medium dark:text-emerald-100">MSFT</span>
+                        <span className="text-xs text-green-600 dark:text-green-400">+1.8%</span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* NG Stocks */}
-                <Card style={{ backgroundColor: 'white', borderColor: '#083423' }}>
+                <Card className="bg-white dark:bg-emerald-900/20 border-[#083423] dark:border-emerald-800">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" style={{ color: '#083423' }} />
-                      <h3 className="font-semibold text-sm">Nigerian Stocks</h3>
+                      <BarChart3 className="h-5 w-5 text-[#083423] dark:text-emerald-400" />
+                      <h3 className="font-semibold text-sm dark:text-emerald-50">Nigerian Stocks</h3>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium">DANGOTE</span>
-                        <span className="text-xs text-green-600">+1.5%</span>
+                        <span className="text-xs font-medium dark:text-emerald-100">DANGOTE</span>
+                        <span className="text-xs text-green-600 dark:text-green-400">+1.5%</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium">MTN</span>
-                        <span className="text-xs text-green-600">+2.3%</span>
+                        <span className="text-xs font-medium dark:text-emerald-100">MTN</span>
+                        <span className="text-xs text-green-600 dark:text-green-400">+2.3%</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium">GTB</span>
-                        <span className="text-xs text-green-600">+0.9%</span>
+                        <span className="text-xs font-medium dark:text-emerald-100">GTB</span>
+                        <span className="text-xs text-green-600 dark:text-green-400">+0.9%</span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Fixed Income */}
-                <Card style={{ backgroundColor: 'white', borderColor: '#083423' }}>
+                <Card className="bg-white dark:bg-emerald-900/20 border-[#083423] dark:border-emerald-800">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-5 w-5" style={{ color: '#083423' }} />
-                      <h3 className="font-semibold text-sm">Fixed Income</h3>
+                      <DollarSign className="h-5 w-5 text-[#083423] dark:text-emerald-400" />
+                      <h3 className="font-semibold text-sm dark:text-emerald-50">Fixed Income</h3>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs">Bonds</span>
-                        <Badge variant="outline" className="text-xs" style={{ borderColor: '#083423', color: '#083423' }}>
+                        <span className="text-xs dark:text-emerald-100">Bonds</span>
+                        <Badge variant="outline" className="text-xs border-[#083423] text-[#083423] dark:border-emerald-500 dark:text-emerald-400">
                           Stable
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs">Treasury Bills</span>
-                        <Badge variant="outline" className="text-xs" style={{ borderColor: '#083423', color: '#083423' }}>
+                        <span className="text-xs dark:text-emerald-100">Treasury Bills</span>
+                        <Badge variant="outline" className="text-xs border-[#083423] text-[#083423] dark:border-emerald-500 dark:text-emerald-400">
                           Low Risk
                         </Badge>
                       </div>
@@ -184,38 +184,38 @@ export function InvestingAnnouncementPopup({ onGetStarted }: InvestingAnnounceme
                 </Card>
 
                 {/* Personalized Insights */}
-                <Card style={{ backgroundColor: 'white', borderColor: '#083423' }}>
+                <Card className="bg-white dark:bg-emerald-900/20 border-[#083423] dark:border-emerald-800">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5" style={{ color: '#083423' }} />
-                      <h3 className="font-semibold text-sm">AI Insights</h3>
+                      <Sparkles className="h-5 w-5 text-[#083423] dark:text-emerald-400" />
+                      <h3 className="font-semibold text-sm dark:text-emerald-50">AI Insights</h3>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground dark:text-emerald-200/50">
                       Get personalized recommendations based on your goals and risk profile
                     </p>
-                    <Badge variant="outline" className="text-xs w-full justify-center" style={{ borderColor: '#083423', color: '#083423' }}>
+                    <Badge variant="outline" className="text-xs w-full justify-center border-[#083423] text-[#083423] dark:border-emerald-500 dark:text-emerald-400">
                       AI-Powered
                     </Badge>
                   </CardContent>
                 </Card>
 
                 {/* Funds Deposit/Withdrawal */}
-                <Card style={{ backgroundColor: 'white', borderColor: '#083423' }}>
+                <Card className="bg-white dark:bg-emerald-900/20 border-[#083423] dark:border-emerald-800">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <ArrowUpDown className="h-5 w-5" style={{ color: '#083423' }} />
-                      <h3 className="font-semibold text-sm">Easy Funding</h3>
+                      <ArrowUpDown className="h-5 w-5 text-[#083423] dark:text-emerald-400" />
+                      <h3 className="font-semibold text-sm dark:text-emerald-50">Easy Funding</h3>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs">Deposit</span>
-                        <Badge variant="outline" className="text-xs" style={{ borderColor: '#083423', color: '#083423' }}>
+                        <span className="text-xs dark:text-emerald-100">Deposit</span>
+                        <Badge variant="outline" className="text-xs border-[#083423] text-[#083423] dark:border-emerald-500 dark:text-emerald-400">
                           Instant
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs">Withdrawal</span>
-                        <Badge variant="outline" className="text-xs" style={{ borderColor: '#083423', color: '#083423' }}>
+                        <span className="text-xs dark:text-emerald-100">Withdrawal</span>
+                        <Badge variant="outline" className="text-xs border-[#083423] text-[#083423] dark:border-emerald-500 dark:text-emerald-400">
                           1-2 Days
                         </Badge>
                       </div>
@@ -224,15 +224,15 @@ export function InvestingAnnouncementPopup({ onGetStarted }: InvestingAnnounceme
                 </Card>
 
                 {/* Portfolio Growth */}
-                <Card style={{ backgroundColor: 'white', borderColor: '#083423' }}>
+                <Card className="bg-white dark:bg-emerald-900/20 border-[#083423] dark:border-emerald-800">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <PiggyBank className="h-5 w-5" style={{ color: '#083423' }} />
-                      <h3 className="font-semibold text-sm">Portfolio Growth</h3>
+                      <PiggyBank className="h-5 w-5 text-[#083423] dark:text-emerald-400" />
+                      <h3 className="font-semibold text-sm dark:text-emerald-50">Portfolio Growth</h3>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-lg font-bold" style={{ color: '#083423' }}>+18.5%</div>
-                      <p className="text-xs text-muted-foreground">Average annual return</p>
+                      <div className="text-lg font-bold text-[#083423] dark:text-emerald-400">+18.5%</div>
+                      <p className="text-xs text-muted-foreground dark:text-emerald-200/50">Average annual return</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -241,9 +241,8 @@ export function InvestingAnnouncementPopup({ onGetStarted }: InvestingAnnounceme
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
                   onClick={handleGetStarted}
-                  className="flex-1 flex items-center justify-center gap-2"
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#083423] text-white hover:bg-[#083423]/90 dark:bg-emerald-600 dark:hover:bg-emerald-700"
                   size="lg"
-                  style={{ backgroundColor: '#083423', color: 'white' }}
                 >
                   Get Started
                   <ArrowRight className="h-4 w-4" />
@@ -251,8 +250,7 @@ export function InvestingAnnouncementPopup({ onGetStarted }: InvestingAnnounceme
                 <Button
                   onClick={handleDismiss}
                   variant="outline"
-                  className="flex-1"
-                  style={{ borderColor: '#083423', color: '#083423' }}
+                  className="flex-1 border-[#083423] text-[#083423] hover:bg-[#083423]/10 dark:border-emerald-500 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
                 >
                   Maybe Later
                 </Button>
