@@ -28,7 +28,11 @@ class BluumApiClient {
 
     // Add response interceptor for error handling
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        console.info('Bluum API URL:', response.config.url);
+        // console.log('Bluum API Response:', response.data);
+        return response;
+      },
       (error: AxiosError) => {
         if (error.response) {
           console.error('Bluum API Error:', {

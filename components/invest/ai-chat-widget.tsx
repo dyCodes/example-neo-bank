@@ -5,16 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Sparkles, Send } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
-interface AIChatWidgetProps {
-  onChatStart?: (message?: string) => void;
-}
 
 const SUGGESTED_PROMPTS = [
   'What is the current market outlook and key trends?',
   'What are the best investment opportunities right now?',
 ];
 
-export function AIChatWidget({ onChatStart }: AIChatWidgetProps) {
+export function AIChatWidget() {
   const router = useRouter();
   const [inputValue, setInputValue] = useState('');
 
@@ -30,21 +27,13 @@ export function AIChatWidget({ onChatStart }: AIChatWidgetProps) {
 
   const handleSend = () => {
     if (inputValue.trim()) {
-      if (onChatStart) {
-        onChatStart(inputValue.trim());
-      } else {
-        router.push(`/invest/chat?message=${encodeURIComponent(inputValue.trim())}`);
-      }
+      router.push(`/invest/chat?message=${encodeURIComponent(inputValue.trim())}`);
       setInputValue('');
     }
   };
 
   const handlePromptClick = (prompt: string) => {
-    if (onChatStart) {
-      onChatStart(prompt);
-    } else {
-      router.push(`/invest/chat?message=${encodeURIComponent(prompt)}`);
-    }
+    router.push(`/invest/chat?message=${encodeURIComponent(prompt)}`);
   };
 
   return (
