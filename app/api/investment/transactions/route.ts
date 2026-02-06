@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type');
     const status = searchParams.get('status');
-    const funding_type = searchParams.get('funding_type');
     const date_from = searchParams.get('date_from');
     const date_to = searchParams.get('date_to');
     const limit = searchParams.get('limit');
@@ -25,7 +24,6 @@ export async function GET(request: NextRequest) {
     const transactions = await bluumApi.listTransactions(accountId, {
       type: type as 'deposit' | 'withdrawal' | undefined,
       status: status as any,
-      funding_type: funding_type as 'fiat' | 'crypto' | undefined,
       date_from: date_from || undefined,
       date_to: date_to || undefined,
       limit: limit ? parseInt(limit) : undefined,
