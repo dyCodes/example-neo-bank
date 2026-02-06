@@ -205,6 +205,90 @@ export class WidgetService {
   }
 
   /**
+   * Get a single financial goal
+   */
+  static async getFinancialGoal(accountId: string, goalId: string): Promise<FinancialGoal> {
+    const queryParams = `?account_id=${encodeURIComponent(accountId)}`;
+    const response = await fetch(`/api/wealth/goals/${goalId}${queryParams}`);
+    return handleResponse<FinancialGoal>(response);
+  }
+
+  /**
+   * Create a new financial goal
+   */
+  static async createFinancialGoal(
+    accountId: string,
+    goalData: {
+      name: string;
+      goal_type: 'retirement' | 'education' | 'emergency' | 'wealth_growth' | 'home_purchase' | 'custom';
+      target_amount: string;
+      target_date?: string;
+      priority?: number;
+      monthly_contribution?: string;
+    },
+    idempotencyKey?: string
+  ): Promise<FinancialGoal> {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (idempotencyKey) {
+      headers['Idempotency-Key'] = idempotencyKey;
+    }
+
+    const response = await fetch('/api/wealth/goals', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        account_id: accountId,
+        ...goalData,
+      }),
+    });
+    return handleResponse<FinancialGoal>(response);
+  }
+
+  /**
+   * Update an existing financial goal
+   */
+  static async updateFinancialGoal(
+    accountId: string,
+    goalId: string,
+    goalData: Partial<{
+      name: string;
+      goal_type: 'retirement' | 'education' | 'emergency' | 'wealth_growth' | 'home_purchase' | 'custom';
+      target_amount: string;
+      target_date: string;
+      priority: number;
+      monthly_contribution: string;
+      status: 'active' | 'completed' | 'archived';
+    }>
+  ): Promise<FinancialGoal> {
+    const response = await fetch(`/api/wealth/goals/${goalId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        account_id: accountId,
+        ...goalData,
+      }),
+    });
+    return handleResponse<FinancialGoal>(response);
+  }
+
+  /**
+   * Delete a financial goal
+   */
+  static async deleteFinancialGoal(accountId: string, goalId: string): Promise<void> {
+    const queryParams = `?account_id=${encodeURIComponent(accountId)}`;
+    const response = await fetch(`/api/wealth/goals/${goalId}${queryParams}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      await handleResponse(response);
+    }
+  }
+
+  /**
    * Get investment policy data for InvestmentPolicyWidget
    */
   static async getInvestmentPolicy(accountId?: string): Promise<InvestmentPolicy> {

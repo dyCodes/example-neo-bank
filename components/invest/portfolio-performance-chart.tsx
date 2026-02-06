@@ -73,19 +73,6 @@ const summaryMetricEntries = (summary?: PortfolioSummary | null): [string, strin
 const hasMetric = (entry: [string, string | undefined]): entry is [string, string] =>
   typeof entry[1] === 'string';
 
-
-// Calculate performance percentage
-const calculatePerformance = (data: PerformanceDataPoint[]): { portfolio: number } => {
-  if (data.length === 0) return { portfolio: 0 };
-
-  const startPortfolio = data[0].portfolio;
-  const endPortfolio = data[data.length - 1].portfolio;
-
-  return {
-    portfolio: ((endPortfolio - startPortfolio) / startPortfolio) * 100,
-  };
-};
-
 export function PortfolioPerformanceChart({
   data: externalData,
   portfolioPerformance,
@@ -98,59 +85,18 @@ export function PortfolioPerformanceChart({
   const [viewMode, setViewMode] = useState<'chart' | 'summary'>('chart');
 
   const chartData = useMemo(() => {
-    const emptyData: PerformanceDataPoint[] = [
-      {
-        date: '2026-01-01',
-        portfolio: 0,
-      },
-      {
-        date: '2026-01-02',
-        portfolio: 0,
-      },
-      {
-        date: '2026-01-03',
-        portfolio: 0,
-      },
-      {
-        date: '2026-01-04',
-        portfolio: 0,
-      },
-      {
-        date: '2026-01-05',
-        portfolio: 0,
-      },
-      {
-        date: '2026-01-06',
-        portfolio: 0,
-      },
-    ];
-    let result: PerformanceDataPoint[] = [];
-
     if (externalData && externalData.length > 0) {
-      result = externalData;
+      return externalData;
     }
 
-    const history = summaryData?.value_history;
-    if (!history || history.length === 0) {
-      result = [];
-    }
-
-    if (history && history.length > 0) {
-      result = history.map((point) => ({
-        date: point.date,
-        portfolio: parseFloat(point.value),
-      }));
-    }
-
-    return result.length > 0 ? result : emptyData;
+    return [
+      { date: '2026-01-01', portfolio: 0 },
+      { date: '2026-01-02', portfolio: 0 },
+      { date: '2026-01-03', portfolio: 0 },
+      { date: '2026-01-04', portfolio: 0 },
+      { date: '2026-01-05', portfolio: 0 },
+    ];
   }, [externalData, summaryData]);
-
-  const performance = useMemo(() => {
-    if (portfolioPerformance !== undefined) {
-      return { portfolio: portfolioPerformance };
-    }
-    return calculatePerformance(chartData);
-  }, [chartData, portfolioPerformance]);
 
   const timeRanges: TimeRange[] = ['1W', '1M', '3M', '1Y', 'All'];
   const summaryLoadingState = !!summaryLoading;
@@ -244,30 +190,37 @@ export function PortfolioPerformanceChart({
 
   // Render summary view
   const renderSummaryView = () => (
-    <div className="">
-      <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-muted-foreground">
+    <>
+      <div className="text-xs mb-4 uppercase tracking-wide text-gray-500 dark:text-muted-foreground">
         Portfolio summary
-      </span>
+      </div>
 
-      {summaryMetrics.length === 0 ? (
-        <div className="text-sm py-8 text-muted-foreground dark:text-white/70">
-          No data available
-        </div>
-      ) : (
-        summaryMetrics.map(([label, value]) => (
-          <div key={label} className="card flex justify-between text-sm text-gray-600 dark:text-muted-foreground">
-            <CardHeader>
-              <CardTitle>{label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <span className="text-gray-900 dark:text-white">
-                {value}
-              </span>
-            </CardContent>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {summaryMetrics.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-gray-200 dark:border-border/50 bg-white/70 dark:bg-[#0F2A20]/80 p-4 text-sm text-center text-muted-foreground dark:text-white/70">
+            No data available
           </div>
-        ))
-      )}
-    </div>
+        ) : (
+          summaryMetrics.map(([label, value]) => (
+            <div
+              key={label}
+              className="rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-[#0F2A20]/60 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2"
+            >
+              <span className="text-xs uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">
+                {label}
+              </span>
+              <span className="text-base font-semibold text-gray-900 dark:text-white">
+                {label.includes('%')
+                  ? `${parseFloat(value).toFixed(2)}%`
+                  : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+                    parseFloat(value)
+                  )}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+    </>
   );
 
   return (

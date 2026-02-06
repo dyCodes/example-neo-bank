@@ -242,6 +242,63 @@ class BluumApiClient {
     return response.data.goals || [];
   }
 
+  async getGoal(
+    accountId: string,
+    goalId: string,
+    params?: {
+      include_projections?: boolean;
+    }
+  ) {
+    const response = await this.client.get(`/wealth/accounts/${accountId}/goals/${goalId}`, {
+      params,
+    });
+    return response.data;
+  }
+
+  async createGoal(
+    accountId: string,
+    goalData: {
+      name: string;
+      goal_type: 'retirement' | 'education' | 'emergency' | 'wealth_growth' | 'home_purchase' | 'custom';
+      target_amount: string;
+      target_date?: string;
+      priority?: number;
+      monthly_contribution?: string;
+    },
+    idempotencyKey?: string
+  ) {
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {};
+    const response = await this.client.post(`/wealth/accounts/${accountId}/goals`, goalData, {
+      headers,
+    });
+    return response.data;
+  }
+
+  async updateGoal(
+    accountId: string,
+    goalId: string,
+    goalData: Partial<{
+      name: string;
+      goal_type: 'retirement' | 'education' | 'emergency' | 'wealth_growth' | 'home_purchase' | 'custom';
+      target_amount: string;
+      target_date: string;
+      priority: number;
+      monthly_contribution: string;
+      status: 'active' | 'completed' | 'archived';
+    }>
+  ) {
+    const response = await this.client.put(
+      `/wealth/accounts/${accountId}/goals/${goalId}`,
+      goalData
+    );
+    return response.data;
+  }
+
+  async deleteGoal(accountId: string, goalId: string) {
+    const response = await this.client.delete(`/wealth/accounts/${accountId}/goals/${goalId}`);
+    return response.data;
+  }
+
   // Wealth Management - Investment Policy
   async getInvestmentPolicy(
     accountId: string,

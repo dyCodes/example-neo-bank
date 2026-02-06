@@ -1,58 +1,76 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
+
 import { InvestOnboarding } from '@/components/invest/onboarding';
 import { AIWealthLanding } from '@/components/invest/ai-wealth-landing';
-import { InvestmentService, type Position } from '@/services/investment.service';
-import { AccountService } from '@/services/account.service';
-import {
-  getAuth,
-  setExternalAccountId,
-  clearExternalAccountId,
-  setInvestingChoice,
-} from '@/lib/auth';
-import { toast } from 'sonner';
 import { PortfolioPerformanceChart } from '@/components/invest/portfolio-performance-chart';
 import { FinancialPlan } from '@/components/invest/financial-plan';
 import { InsightsWidget } from '@/components/invest/insights-widget';
 import { InvestmentPolicyWidget } from '@/components/invest/investment-policy-widget';
 import { QuickActionsWidget } from '@/components/invest/quick-actions-widget';
-import { WidgetService, type Insight, type Recommendation } from '@/services/widget.service';
 import { AIChatWidget } from '@/components/invest/ai-chat-widget';
+
+import { InvestmentService, type Position } from '@/services/investment.service';
+import { AccountService } from '@/services/account.service';
+import { WidgetService, type Insight, type Recommendation, type PerformanceDataPoint, FinancialGoal } from '@/services/widget.service';
+import { getAuth, setExternalAccountId, clearExternalAccountId, setInvestingChoice } from '@/lib/auth';
 
 export default function Invest() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
   const [accountId, setAccountId] = useState<string | null>(null);
-  const [accountBalance, setAccountBalance] = useState<number>(0);
-  const [portfolioGains, setPortfolioGains] = useState({
-    totalGain: 0,
-    totalGainPercent: 0,
-  });
+  const [accountBalance, setAccountBalance] = useState(0);
+  const [portfolioGains, setPortfolioGains] = useState({ totalGain: 0, totalGainPercent: 0 });
   const [portfolioId, setPortfolioId] = useState<string | null>(null);
   const [summaryData, setSummaryData] = useState<any | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
-  const [hasAccountId, setHasAccountId] = useState<boolean>(false);
-  const [showAIOnboarding, setShowAIOnboarding] = useState<boolean>(false);
+  const [chartData, setChartData] = useState<PerformanceDataPoint[]>([]);
+  const [chartLoading, setChartLoading] = useState(false);
+  const [chartError, setChartError] = useState<string | null>(null);
+  const [hasAccountId, setHasAccountId] = useState(false);
+  const [showAIOnboarding, setShowAIOnboarding] = useState(false);
 
-  // Widget data from WidgetService
-  const [financialGoals, setFinancialGoals] = useState<any[]>([]);
+  // Widget data
+  const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>([]);
   const [investmentPolicy, setInvestmentPolicy] = useState<any>(null);
   const [widgetInsights, setWidgetInsights] = useState<{ insights: Insight[]; recommendations: Recommendation[] } | undefined>(undefined);
 
-  const loadPortfolio = async () => {
+  const loadSummaryData = async (userAccountId: string, detectedPortfolioId: string) => {
+    setSummaryLoading(true);
+    setSummaryError(null);
+    try {
+      const summary = await WidgetService.getPortfolioSummary(userAccountId, detectedPortfolioId);
+      setSummaryData(summary);
+    } catch (error: any) {
+      console.error('Failed to load portfolio summary', error);
+      setSummaryError(error?.message || 'Unable to load portfolio summary');
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  const loadChartData = async (userAccountId: string, detectedPortfolioId: string) => {
+    setChartLoading(true);
+    setChartError(null);
+    try {
+      const data = await WidgetService.getPortfolioPerformanceData('1M', userAccountId, detectedPortfolioId);
+      setChartData(data);
+    } catch (error: any) {
+      console.error('Failed to load performance data', error);
+      setChartError(error?.message || 'Unable to load chart data');
+    } finally {
+      setChartLoading(false);
+    }
+  };
+
+  const loadPortfolio = async (userAccountId: string) => {
     try {
       setLoading(true);
-
-      // Get account ID from user object
-      const user = getAuth();
-      const userAccountId = user?.externalAccountId;
-
-      if (!userAccountId) {
-        setLoading(false);
-        return;
-      }
 
       setAccountId(userAccountId);
       let account;
@@ -83,6 +101,18 @@ export default function Invest() {
         null;
       setPortfolioId(detectedPortfolioId);
 
+      if (detectedPortfolioId) {
+        await Promise.all([
+          loadSummaryData(userAccountId, detectedPortfolioId),
+          loadChartData(userAccountId, detectedPortfolioId),
+        ]);
+      } else {
+        setSummaryData(null);
+        setSummaryError(null);
+        setChartData([]);
+        setChartError(null);
+      }
+
       // Fetch positions
       const positionsData = await InvestmentService.getPositions(userAccountId);
       setPositions(positionsData);
@@ -102,45 +132,54 @@ export default function Invest() {
   };
 
   // Load widget data
-  const loadWidgetData = async (accountId?: string) => {
+  const loadWidgetData = async (accountId: string) => {
     try {
-      const [
-        financialGoalsData,
-        investmentPolicyData,
-        widgetInsightsData,
-      ] = await Promise.all([
+      const results = await Promise.allSettled([
         WidgetService.getFinancialGoals(accountId),
         WidgetService.getInvestmentPolicy(accountId),
         WidgetService.getWidgetInsights(accountId),
       ]);
 
-      setFinancialGoals(financialGoalsData);
-      setInvestmentPolicy(investmentPolicyData);
-      setWidgetInsights(widgetInsightsData);
+      // Handle financial goals
+      if (results[0].status === 'fulfilled') {
+        setFinancialGoals(results[0].value);
+      } else {
+        console.error('Failed to load financial goals:', results[0].reason);
+        setFinancialGoals([]);
+      }
+
+      // Handle investment policy
+      if (results[1].status === 'fulfilled') {
+        setInvestmentPolicy(results[1].value);
+      } else {
+        console.error('Failed to load investment policy:', results[1].reason);
+      }
+
+      // Handle widget insights
+      if (results[2].status === 'fulfilled') {
+        setWidgetInsights(results[2].value);
+      } else {
+        console.error('Failed to load widget insights:', results[2].reason);
+      }
     } catch (error) {
       console.error('Failed to load widget data:', error);
     }
   };
 
   useEffect(() => {
-    // Check if user has externalAccountId
     const user = getAuth();
     const userAccountId = user?.externalAccountId;
-
-    // Load widget data (works with or without accountId)
-    loadWidgetData(userAccountId || undefined);
 
     if (userAccountId) {
       setHasAccountId(true);
       setAccountId(userAccountId);
-      loadPortfolio();
+      loadPortfolio(userAccountId);
+      loadWidgetData(userAccountId);
     } else {
       setHasAccountId(false);
       setLoading(false);
-
-      // Set default to AI Wealth if no choice has been made
-      const user = getAuth();
-      if (!user?.investingChoice) {
+      const userWithChoice = getAuth();
+      if (!userWithChoice?.investingChoice) {
         setInvestingChoice('ai-wealth');
       }
     }
@@ -153,37 +192,13 @@ export default function Invest() {
     setExternalAccountId(newAccountId);
     setAccountId(newAccountId);
     setHasAccountId(true);
-    loadPortfolio();
+    loadPortfolio(newAccountId);
+    loadWidgetData(newAccountId);
     toast.success('Welcome to investing!');
   };
 
-  useEffect(() => {
-    if (!accountId || !portfolioId) {
-      setSummaryData(null);
-      setSummaryError(null);
-      setSummaryLoading(false);
-      return;
-    }
-
-    setSummaryLoading(true);
-    setSummaryError(null);
-
-    WidgetService.getPortfolioSummary(accountId, portfolioId)
-      .then((summary) => {
-        setSummaryData(summary);
-      })
-      .catch((error) => {
-        console.error('Failed to load portfolio summary', error);
-        setSummaryError(error?.message || 'Unable to load portfolio summary');
-      })
-      .finally(() => {
-        setSummaryLoading(false);
-      });
-  }, [accountId, portfolioId]);
-
   // Show AI Wealth Landing if no account
   if (!hasAccountId) {
-    // If user clicked "Get Started", show onboarding directly
     if (showAIOnboarding) {
       return <InvestOnboarding onAccept={handleAccountCreated} />;
     }
@@ -231,6 +246,8 @@ export default function Invest() {
             portfolioValue={
               accountBalance + positions.reduce((sum, pos) => sum + (pos.value || 0), 0)
             }
+            data={chartData}
+            portfolioPerformance={portfolioGains.totalGainPercent}
             summaryData={summaryData}
             summaryLoading={summaryLoading}
             summaryError={summaryError}
@@ -243,8 +260,27 @@ export default function Invest() {
         </div>
       </section>
 
-      <section className="py-2">
-        <FinancialPlan goals={financialGoals} />
+      <section className="py-2 space-y-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="text-base font-semibold text-gray-900 dark:text-white">
+              Financial Plan
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Track your financial goals and progress
+            </p>
+          </div>
+          {financialGoals.length > 0 && (
+            <Link
+              href="/invest/financial-plan"
+              className="flex items-center gap-0.5 text-sm text-blue-500 hover:opacity-80 transition-opacity"
+            >
+              View all goals
+              <ChevronRight className="w-3 h-3 text-blue-500" />
+            </Link>
+          )}
+        </div>
+        <FinancialPlan goals={financialGoals.slice(0, 4)} />
       </section>
 
       <section className="py-4">

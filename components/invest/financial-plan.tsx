@@ -1,12 +1,12 @@
 'use client';
 
-import { Umbrella, Shield, TrendingUp, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
+import { Umbrella, Shield, TrendingUp } from 'lucide-react';
 import { type FinancialGoal } from '@/services/widget.service';
 
 interface FinancialPlanProps {
   goals?: FinancialGoal[];
   onViewDetails?: () => void;
+  onGoalClick?: (goal: FinancialGoal) => void;
 }
 
 // Helper function to get icon based on goal type
@@ -22,7 +22,7 @@ const getGoalIcon = (goalType: string) => {
   return iconMap[goalType] || <Umbrella className="h-5 w-5 text-white" />;
 };
 
-export function FinancialPlan({ goals = [] }: FinancialPlanProps) {
+export function FinancialPlan({ goals = [], onGoalClick }: FinancialPlanProps) {
   const formatCurrency = (value: number, compact: boolean = false) => {
     if (compact) {
       if (value >= 1000000) {
@@ -54,28 +54,6 @@ export function FinancialPlan({ goals = [] }: FinancialPlanProps) {
 
   return (
     <div className="w-full">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-base font-semibold text-gray-900 dark:text-white">
-          Financial Plan
-        </div>
-
-        {goals.length > 0 && (
-          <Link
-            href="/invest?tab=plan"
-            className="flex items-center gap-0.5 hover:opacity-80 transition-opacity"
-          >
-            <span
-              className="text-xs font-normal text-blue-500 dark:text-blue-400"
-              style={{ fontSize: 12, fontFamily: 'Inter', fontWeight: 400, }}
-            >
-              View all goals
-            </span>
-            <ChevronRight className="w-3 h-3 text-blue-500 dark:text-blue-400" />
-          </Link>
-        )}
-      </div>
-
       {/* Goals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {goals.map((goal) => {
@@ -99,11 +77,7 @@ export function FinancialPlan({ goals = [] }: FinancialPlanProps) {
               {/* Icon and Percentage Badge */}
               <div className="flex justify-between items-start">
                 <div
-                  className="w-9 h-9 rounded-[10px] flex items-center justify-center bg-[#1E3D2F] dark:bg-emerald-900/30"
-                  style={{
-                    paddingLeft: 12,
-                    paddingRight: 12,
-                  }}
+                  className="w-9 h-9 p-2 rounded-[10px] flex items-center justify-center bg-[#1E3D2F] dark:bg-emerald-900/30"
                 >
                   {getGoalIcon(goal.goal_type)}
                 </div>
@@ -188,6 +162,16 @@ export function FinancialPlan({ goals = [] }: FinancialPlanProps) {
                   )}
                 </div>
               </div>
+
+              {onGoalClick && (
+                <button
+                  type="button"
+                  className="mt-3 text-xs font-semibold text-green-400 transition-colors"
+                  onClick={() => onGoalClick(goal)}
+                >
+                  View details
+                </button>
+              )}
             </div>
           );
         })}
