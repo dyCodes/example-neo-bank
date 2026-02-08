@@ -49,6 +49,9 @@ interface Agreements {
 }
 
 export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
+  const fieldClassName =
+    'h-11 rounded-md border border-border bg-background px-3 text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0 dark:bg-card dark:border-border dark:text-foreground';
+
   const [step, setStep] = useState(0); // Step 0 = Financial Profile, Step 1 = Tax, Step 2 = Employment, Step 3 = Disclosures
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [financialProfile, setFinancialProfile] = useState<FinancialProfile>({
@@ -286,12 +289,12 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
         <CardHeader>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="rounded-full bg-primary/10 p-2">
-                <TrendingUp className="h-6 w-6 text-primary" />
+              <div className="rounded-full bg-primary/10 p-2 dark:bg-primary/20">
+                <TrendingUp className="h-6 w-6 text-primary dark:text-primary-foreground" />
               </div>
               <div>
-                <CardTitle className="text-2xl">Start Investing</CardTitle>
-                <CardDescription className="text-sm">
+                <CardTitle className="text-2xl text-foreground">Start Investing</CardTitle>
+                <CardDescription className="text-sm text-muted-foreground">
                   Step {step + 1} of {totalSteps}
                 </CardDescription>
               </div>
@@ -301,7 +304,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                 <div
                   key={i}
                   className={`h-2 w-8 rounded-full transition-colors ${
-                    i <= step ? 'bg-primary' : 'bg-muted'
+                    i <= step ? 'bg-primary dark:bg-white/50' : 'bg-muted/70 dark:bg-muted/40'
                   }`}
                 />
               ))}
@@ -333,6 +336,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                     }
                     aria-invalid={!!errors.annualIncome}
                     placeholder="Select annual income range"
+                    className={fieldClassName}
                   >
                     <option value="under_25000">Under $25,000</option>
                     <option value="25000_99999">$25,000 - $99,999</option>
@@ -359,6 +363,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                     onChange={(e) => handleFinancialProfileChange('netWorth', e.target.value)}
                     aria-invalid={!!errors.netWorth}
                     placeholder="Select net worth range"
+                    className={fieldClassName}
                   >
                     <option value="under_25000">Under $25,000</option>
                     <option value="25000_99999">$25,000 - $99,999</option>
@@ -387,6 +392,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                     }
                     aria-invalid={!!errors.liquidAssets}
                     placeholder="Select liquid assets range"
+                    className={fieldClassName}
                   >
                     <option value="under_25000">Under $25,000</option>
                     <option value="25000_99999">$25,000 - $99,999</option>
@@ -415,6 +421,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                     }
                     aria-invalid={!!errors.fundingSource}
                     placeholder="Select funding source"
+                    className={fieldClassName}
                   >
                     <option value="employment_income">Employment Income</option>
                     <option value="business_income">Business Income</option>
@@ -453,6 +460,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                     value={taxInfo.taxId}
                     onChange={(e) => handleTaxInfoChange('taxId', e.target.value)}
                     aria-invalid={!!errors.taxId}
+                    className={fieldClassName}
                   />
                   {errors.taxId && <p className="text-xs text-destructive">{errors.taxId}</p>}
                 </div>
@@ -467,6 +475,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                     onChange={(e) => handleTaxInfoChange('taxIdType', e.target.value)}
                     aria-invalid={!!errors.taxIdType}
                     placeholder="Select tax ID type"
+                    className={fieldClassName}
                   >
                     <option value="SSN">SSN</option>
                     <option value="ITIN">ITIN</option>
@@ -494,6 +503,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                       handleTaxInfoChange('countryOfCitizenship', e.target.value)
                     }
                     aria-invalid={!!errors.countryOfCitizenship}
+                    className={fieldClassName}
                   >
                     <option value="NG">Nigeria</option>
                     <option value="US">United States</option>
@@ -517,6 +527,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                       handleTaxInfoChange('countryOfTaxResidence', e.target.value)
                     }
                     aria-invalid={!!errors.countryOfTaxResidence}
+                    className={fieldClassName}
                   >
                     <option value="NG">Nigeria</option>
                     <option value="US">United States</option>
@@ -555,6 +566,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                     }
                     aria-invalid={!!errors.employmentStatus}
                     placeholder="Select employment status"
+                    className={fieldClassName}
                   >
                     <option value="employed">Employed</option>
                     <option value="unemployed">Unemployed</option>
@@ -585,6 +597,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                               handleEmploymentInfoChange('employer', e.target.value)
                             }
                             aria-invalid={!!errors.employer}
+                            className={fieldClassName}
                           />
                           {errors.employer && (
                             <p className="text-xs text-destructive">{errors.employer}</p>
@@ -604,6 +617,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                               handleEmploymentInfoChange('position', e.target.value)
                             }
                             aria-invalid={!!errors.position}
+                            className={fieldClassName}
                           />
                           {errors.position && (
                             <p className="text-xs text-destructive">{errors.position}</p>
@@ -622,6 +636,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                             }
                             aria-invalid={!!errors.function}
                             placeholder="Select your job function"
+                            className={fieldClassName}
                           >
                             <option value="engineering">Engineering</option>
                             <option value="management">Management</option>
@@ -651,6 +666,7 @@ export function InvestOnboarding({ onAccept }: InvestOnboardingProps) {
                               handleEmploymentInfoChange('employerAddress', e.target.value)
                             }
                             aria-invalid={!!errors.employerAddress}
+                            className={fieldClassName}
                           />
                           {errors.employerAddress && (
                             <p className="text-xs text-destructive">

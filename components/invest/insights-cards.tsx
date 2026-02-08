@@ -42,13 +42,13 @@ export function PersonalizedInsights() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/40 dark:text-red-100 dark:border-red-600/60';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/40 dark:text-amber-100 dark:border-amber-600/60';
       case 'low':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-900/40 dark:text-sky-100 dark:border-sky-600/60';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-900/40 dark:text-slate-100 dark:border-slate-600/60';
     }
   };
 
@@ -71,7 +71,7 @@ export function PersonalizedInsights() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold" style={{ color: '#083423' }}>
+        <h2 className="text-2xl font-bold text-foreground">
           Personalized Insights
         </h2>
         <p className="text-muted-foreground text-sm mt-1">
@@ -82,17 +82,13 @@ export function PersonalizedInsights() {
         {insights.map((insight) => (
           <Card
             key={insight.id}
-            className="cursor-pointer transition-all hover:shadow-md"
-            style={{ borderColor: '#edf9cd' }}
+            className="cursor-pointer transition-all hover:shadow-md border border-border bg-card dark:bg-card"
           >
             <CardContent className="p-6 space-y-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="rounded-full p-2"
-                    style={{ backgroundColor: '#edf9cd' }}
-                  >
-                    <div style={{ color: '#083423' }}>{getIcon(insight.type)}</div>
+                  <div className="rounded-full p-2 bg-primary/10 dark:bg-primary/20">
+                    <div className="text-primary dark:text-primary-foreground">{getIcon(insight.type)}</div>
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{insight.title}</h3>
@@ -112,8 +108,7 @@ export function PersonalizedInsights() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full"
-                  style={{ borderColor: '#083423', color: '#083423' }}
+                  className="w-full border-primary/80 text-primary dark:border-primary-foreground/70 dark:text-primary-foreground hover:bg-primary/5 dark:hover:bg-primary-foreground/10"
                 >
                   {insight.actionLabel}
                   <ArrowRight className="h-4 w-4 ml-2" />

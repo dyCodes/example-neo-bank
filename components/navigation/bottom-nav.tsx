@@ -20,23 +20,24 @@ export function BottomNav() {
   const isInvestActive = pathname.startsWith('/invest');
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card dark:bg-[#0F2A20] lg:hidden">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           // For Invest, check if pathname starts with /invest
           const isActive = item.path === '/invest' ? isInvestActive : pathname === item.path;
+          const baseLinkClasses =
+            'flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors duration-150';
+          const activeClasses = 'text-primary dark:text-primary-foreground bg-primary/10 dark:bg-primary/20';
+          const inactiveClasses =
+            'text-muted-foreground hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-muted/5 dark:hover:bg-muted/10';
 
           return (
             <Link
               key={item.path}
               href={item.path}
-              className={cn(
-                'flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors',
-                isActive
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
+              className={cn(baseLinkClasses, isActive ? activeClasses : inactiveClasses)}
+              aria-current={isActive ? 'page' : undefined}
             >
               <Icon className={cn('h-5 w-5', isActive && 'fill-current')} />
               <span className="text-xs font-medium">{item.label}</span>

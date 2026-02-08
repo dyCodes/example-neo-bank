@@ -36,7 +36,7 @@ export function TrendingStocks() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold" style={{ color: '#083423' }}>
+        <h2 className="text-2xl font-bold text-foreground">
           Top Trending Stocks
         </h2>
         <p className="text-muted-foreground text-sm mt-1">
@@ -52,14 +52,11 @@ export function TrendingStocks() {
               href={`/invest/assets/${stock.symbol}`}
               className="block"
             >
-              <Card
-                className="cursor-pointer transition-all hover:shadow-md h-full"
-                style={{ backgroundColor: '#edf9cd', borderColor: '#edf9cd' }}
-              >
+              <Card className="cursor-pointer transition-all hover:shadow-md h-full border border-border bg-card dark:bg-card">
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-sm" style={{ color: '#083423' }}>
+                      <p className="font-bold text-sm text-foreground">
                         {stock.symbol}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
@@ -69,18 +66,20 @@ export function TrendingStocks() {
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-lg font-semibold" style={{ color: '#083423' }}>
+                    <p className="text-lg font-semibold text-foreground">
                       ${stock.price.toFixed(2)}
                     </p>
                     <div className="flex items-center gap-1">
                       {isPositive ? (
-                        <ArrowUp className="h-3 w-3 text-green-600" />
+                        <ArrowUp className="h-3 w-3 text-emerald-500 dark:text-emerald-300" />
                       ) : (
-                        <ArrowDown className="h-3 w-3 text-red-600" />
+                        <ArrowDown className="h-3 w-3 text-rose-500 dark:text-rose-300" />
                       )}
                       <span
                         className={`text-xs font-medium ${
-                          isPositive ? 'text-green-600' : 'text-red-600'
+                          isPositive
+                            ? 'text-emerald-500 dark:text-emerald-300'
+                            : 'text-rose-500 dark:text-rose-300'
                         }`}
                       >
                         {isPositive ? '+' : ''}

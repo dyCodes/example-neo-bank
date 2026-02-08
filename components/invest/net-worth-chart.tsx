@@ -47,15 +47,15 @@ export function NetWorthChart({ accountBalance }: { accountBalance?: number }) {
     if (active && payload && payload.length) {
       const dataPoint = payload[0].payload as NetWorthDataPoint;
       return (
-        <div className="bg-background border rounded-lg p-3 shadow-lg">
-          <p className="font-semibold">{dataPoint.month}</p>
-          <p className="text-sm" style={{ color: '#083423' }}>
+        <div className="bg-card text-card-foreground border border-border rounded-lg p-3 shadow-lg">
+          <p className="font-semibold text-foreground">{dataPoint.month}</p>
+          <p className="text-sm text-primary dark:text-primary-foreground">
             Net Worth: {formatCurrency(dataPoint.netWorth)}
           </p>
           {dataPoint.event && (
-            <div className="mt-2 pt-2 border-t flex items-center gap-2">
+            <div className="mt-2 pt-2 border-t border-border flex items-center gap-2">
               {getEventIcon(dataPoint.event.type)}
-              <span className="text-xs">{dataPoint.event.label}</span>
+              <span className="text-xs text-muted-foreground">{dataPoint.event.label}</span>
             </div>
           )}
         </div>
@@ -97,13 +97,14 @@ export function NetWorthChart({ accountBalance }: { accountBalance?: number }) {
               <div>
                 <CardTitle>Net Worth Growth</CardTitle>
                 <div className="mt-2">
-                  <p className="text-3xl font-bold" style={{ color: '#083423' }}>
-                    {formatCurrency(currentNetWorth)}
-                  </p>
+                  <p className="text-3xl font-bold text-foreground">{formatCurrency(currentNetWorth)}</p>
                   <p className="text-sm text-muted-foreground">Current Net Worth</p>
                 </div>
 
-                <Badge variant="outline" style={{ borderColor: '#083423', color: '#083423' }}>
+                <Badge
+                  variant="outline"
+                  className="border-primary text-primary dark:border-primary-foreground dark:text-primary-foreground bg-primary/10 dark:bg-primary/20"
+                >
                   Example Portfolio
                 </Badge>
               </div>
@@ -145,18 +146,19 @@ export function NetWorthChart({ accountBalance }: { accountBalance?: number }) {
           </ResponsiveContainer>
 
           {/* Event Markers */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-4 border-t">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-4 border-t border-border">
             {data
               .filter((d) => d.event)
               .map((dataPoint, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-2 p-2 rounded-lg"
-                  style={{ backgroundColor: '#edf9cd' }}
+                  className="flex items-start gap-2 p-2 rounded-lg bg-primary/10 dark:bg-primary/20"
                 >
-                  <div style={{ color: '#083423' }}>{getEventIcon(dataPoint.event!.type)}</div>
+                  <div className="text-primary dark:text-primary-foreground">
+                    {getEventIcon(dataPoint.event!.type)}
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium" style={{ color: '#083423' }}>
+                    <p className="text-xs font-medium text-foreground">
                       {dataPoint.month}
                     </p>
                     <p className="text-xs text-muted-foreground">{dataPoint.event!.label}</p>

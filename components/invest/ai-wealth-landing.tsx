@@ -28,17 +28,17 @@ export function AIWealthLanding({
       {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-full p-2 bg-[#edf9cd] dark:bg-emerald-900/30">
-            <Sparkles className="h-6 w-6 text-[#083423] dark:text-emerald-400" />
+          <div className="rounded-full p-2 bg-primary/10 dark:bg-primary/20">
+            <Sparkles className="h-6 w-6 text-primary dark:text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-[#083423] dark:text-white">
+            <h1 className="text-3xl font-bold text-foreground dark:text-foreground">
               AI Personalized Wealth Management
             </h1>
             <div className="flex items-center gap-2 mt-2">
               <Badge
                 variant="outline"
-                className="border-[#083423] text-[#083423] bg-[#edf9cd] dark:border-emerald-500/50 dark:text-emerald-400 dark:bg-emerald-900/20"
+                className="border-primary text-primary bg-primary/10 dark:border-primary-foreground dark:text-primary-foreground dark:bg-primary/20"
               >
                 AI-Powered
               </Badge>
@@ -58,7 +58,7 @@ export function AIWealthLanding({
         <Button
           onClick={onStartOnboarding}
           size="lg"
-          className="mt-4 bg-[#083423] text-white hover:bg-[#083423]/90 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+          className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary focus-visible:ring-offset-background dark:bg-primary dark:hover:bg-primary/90"
         >
           Get Started with AI Wealth Management
         </Button>

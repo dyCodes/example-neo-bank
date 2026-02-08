@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -22,6 +23,7 @@ import {
 } from '@/lib/constants';
 import { setAuth } from '@/lib/auth';
 import { mockUserAccount } from '@/lib/mock-data';
+import Link from 'next/link';
 
 export default function SignIn() {
   const router = useRouter();
@@ -108,25 +110,21 @@ export default function SignIn() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <div className="flex justify-center mb-4">
-            <div className="flex items-center gap-2">
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 40 40"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-primary"
-              >
-                <rect width="40" height="40" rx="8" fill="currentColor" opacity="0.1" />
-                <path
-                  d="M20 10L12 14V16H28V14L20 10ZM12 18V28H28V18H12ZM14 20H26V26H14V20Z"
-                  fill="currentColor"
+          <Link href="/" className="flex justify-center mb-4">
+            <div className="flex items-center gap-2 text-primary dark:text-primary-foreground">
+              <div className="h-10 w-10 flex items-center justify-center">
+                <Image
+                  src="/favicon.svg"
+                  alt="Neo Bank logo"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8"
+                  priority
                 />
-              </svg>
+              </div>
               <span className="text-2xl font-bold">Neo Bank</span>
             </div>
-          </div>
+          </Link>
           <CardTitle>Sign In</CardTitle>
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
@@ -141,6 +139,7 @@ export default function SignIn() {
                 placeholder={'name@example.com'}
                 defaultValue={DEFAULT_EMAIL}
                 required
+                className="h-11 text-primary dark:text-primary-foreground"
                 autoComplete="email"
               />
             </div>
@@ -153,9 +152,10 @@ export default function SignIn() {
                 placeholder="Enter password"
                 required
                 autoComplete="current-password"
+                className="h-11 text-primary dark:text-primary-foreground"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-11" disabled={isSubmitting}>
               {isSubmitting ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
